@@ -10,13 +10,12 @@ create table public.profiles (
   username text not null unique check (username ~ '^[a-z0-9._]{3,20}$'),
   mobile text unique check (mobile ~ '^[6-9][0-9]{9}$'),
   role text not null default 'customer' check (role in ('customer', 'admin')),
-  created_at timestamptz not null default now(),
-  constraint customers_have_mobile check (role = 'admin' or mobile is not null)
+  created_at timestamptz not null default now()
 );
 
 -- Create the profile when someone signs up. Username and mobile come from the
--- sign-up form's metadata; accounts made in the dashboard (the admin) get a
--- placeholder username and no mobile until an admin role is granted.
+-- sign-up form's metadata. Accounts made in the Supabase dashboard (the admin)
+-- get a placeholder username and no mobile.
 create function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -121,7 +120,7 @@ create index product_sizes_product_idx on public.product_sizes (product_id, sort
 create table public.store_settings (
   id int primary key default 1 check (id = 1),
   whatsapp_number text check (whatsapp_number is null or whatsapp_number ~ '^[6-9][0-9]{9}$'),
-  upi_id text check (upi_id is null or upi_id ~ '^[a-zA-Z0-9._-]{2,256}@[a-zA-Z]{2,64}$'),
+  upi_id text check (upi_id is null or (length(upi_id) <= 100 and upi_id ~ '^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$')),
   pickup_address text check (pickup_address is null or length(pickup_address) <= 300),
   updated_at timestamptz not null default now()
 );

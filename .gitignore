@@ -31,3 +31,7 @@ dist-ssr
 # Supabase local
 supabase/.branches
 supabase/.temp
+
+# Test output
+test-results
+playwright-report

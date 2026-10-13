@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Link, Navigate, RouterProvider } from 'react-router'
 import './index.css'
+import { Loading } from './components/States'
 import { AuthProvider } from './lib/auth'
 import { ProductPage } from './pages/Product'
 import { Shop } from './pages/Shop'
@@ -21,9 +22,10 @@ const router = createBrowserRouter([
   { path: '/', element: <Shop /> },
   { path: '/p/:id', element: <ProductPage /> },
   // Admin pages load separately so shoppers' phones download less.
-  { path: '/admin/login', lazy: async () => ({ Component: (await import('./pages/admin/AdminLogin')).AdminLogin }) },
+  { path: '/admin/login', hydrateFallbackElement: <Loading />, lazy: async () => ({ Component: (await import('./pages/admin/AdminLogin')).AdminLogin }) },
   {
     path: '/admin',
+    hydrateFallbackElement: <Loading />,
     lazy: async () => ({ Component: (await import('./pages/admin/AdminLayout')).AdminLayout }),
     children: [
       { index: true, element: <Navigate to="/admin/products" replace /> },
