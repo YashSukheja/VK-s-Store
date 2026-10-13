@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-display: "Archivo", "Manrope", system-ui, sans-serif;
+
+  --color-ink: #111111;
+  --color-accent: #d4ff3f;
+  --color-surface: #f4f4f1;
+  --color-photo: #f2f2ee;
+  --color-line: #e6e6e1;
+  --color-field: #cfcfc8;
+  --color-muted: #5c5c57;
+  --color-body: #3a3a36;
+  --color-warn-bg: #fff4d6;
+  --color-warn-line: #e8b93a;
+  --color-warn-ink: #3d2a00;
+  --color-danger: #b42318;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide the scrollbar on horizontal chip rows while keeping them scrollable. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
