@@ -1,4 +1,4 @@
-import type { Product } from './types'
+import type { Booking, BookingStatus, Product } from './types'
 
 const rupee = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
 
@@ -39,4 +39,35 @@ export function slugify(text: string): string {
 /** Builds a wa.me link that opens WhatsApp with a filled-in message. */
 export function whatsappLink(number: string, message: string): string {
   return `https://wa.me/91${number}?text=${encodeURIComponent(message)}`
+}
+
+const dateTime = new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })
+
+export function formatDateTime(iso: string): string {
+  return dateTime.format(new Date(iso))
+}
+
+export const STATUS_LABEL: Record<BookingStatus, string> = {
+  pending: 'Waiting for VK',
+  confirmed: 'Confirmed',
+  completed: 'Completed',
+  rejected: 'Rejected',
+  cancelled: 'Cancelled',
+}
+
+/** The WhatsApp message a customer sends VK after booking. */
+export function bookingMessage(b: Booking): string {
+  const lines = b.booking_items.map(
+    (i, n) => `${n + 1}. ${i.product_name} | Size ${i.size} | Qty ${i.quantity} | ${formatPrice(i.price * i.quantity)}`,
+  )
+  return [
+    `New booking ${b.code}`,
+    `Customer: ${b.customer_username} (${b.customer_mobile})`,
+    ...lines,
+    `Total: ${formatPrice(b.total)}`,
+    b.fulfilment === 'pickup' ? 'Pickup from the shop' : `Delivery to: ${b.delivery_address}`,
+    `Payment: ${b.payment_method === 'upi' ? 'UPI' : 'Cash'}`,
+    ...(b.note ? [`Note: ${b.note}`] : []),
+    `Booked: ${formatDateTime(b.created_at)}`,
+  ].join('\n')
 }

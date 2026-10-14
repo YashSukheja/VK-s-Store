@@ -4,10 +4,13 @@ A mobile-first shop website for VK's Store: customers browse clothes by category
 
 Built with React + TypeScript + Tailwind CSS (Vite), with Supabase for the database, logins and photo storage. Everything runs on free plans.
 
-## What's built (phase 2: catalog)
+## What's built (phases 2 and 3: catalog, customer accounts, bookings)
 
 - **Shop** (`/`): category bar on phones, sidebar on larger screens; "Only N left" and "Sold out" labels.
-- **Product page** (`/p/:id`): swipeable photos, MRP and saving, size buttons with stock, quantity, "Book on WhatsApp" with a filled-in message.
+- **Product page** (`/p/:id`): swipeable photos, MRP and saving, size buttons with stock, quantity, Add to cart.
+- **Customers**: create an account with username, mobile and password (`/register`); log in with username or mobile (`/login`). Supabase needs an email per login, so each customer gets a private placeholder address (`c-<random>@customers.vks-store.invalid`) they never see.
+- **Cart and booking** (`/cart`): cart kept on the phone; pickup or delivery, cash or UPI, a note. The database checks stock and sets prices. Each booking gets a code like `VK-1001` and starts as "Waiting for VK"; stock is taken off when VK confirms (phase 4). A customer can have 3 waiting bookings at most.
+- **After booking** (`/bookings/:code`): "Send to VK on WhatsApp" opens WhatsApp with the booking ID, customer, items, sizes, quantities, prices, total and time. `/account` lists the customer's bookings and statuses.
 - **Admin** (`/admin`): email + password, then a 6-digit code from an authenticator app (Google Authenticator). Products with up to 8 photos (shrunk on the phone before upload), size stock, show/hide; categories with size lists; store settings (WhatsApp number, UPI ID, pickup address).
 
 Security lives in the database: visitors can only read visible items, and only the admin account, after the authenticator step, can change anything (see `supabase/migrations`).
@@ -32,7 +35,7 @@ npm run test:e2e   # resets the local database, then browser tests: admin setup,
 
 ## Put it online (one-time setup)
 
-1. **Supabase**: create a project (region: Mumbai). In Authentication > Sign In / Providers, keep Email on and turn **off** "Confirm email". In Authentication > Multi-Factor, make sure **TOTP (authenticator app)** is enabled.
+1. **Supabase**: create a project (region: Mumbai). In Authentication > Sign In / Providers, keep Email on and turn **off** "Confirm email" (customer sign-up needs this). In Authentication > Multi-Factor, make sure **TOTP (authenticator app)** is enabled.
 2. **Database**: link and push the migrations:
    ```bash
    npx supabase login

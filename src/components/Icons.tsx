@@ -78,3 +78,23 @@ export const DownIcon = (p: IconProps) => (
     <path d="M6 9l6 6 6-6" />
   </svg>
 )
+
+export const BagIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M5 8h14l-1 12H6z" />
+    <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+  </svg>
+)
+
+export const UserIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </svg>
+)
+
+export const CheckIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M5 12l5 5 9-10" />
+  </svg>
+)

@@ -4,6 +4,11 @@ import { createBrowserRouter, Link, Navigate, RouterProvider } from 'react-route
 import './index.css'
 import { Loading } from './components/States'
 import { AuthProvider } from './lib/auth'
+import { CartProvider } from './lib/cart'
+import { Account } from './pages/Account'
+import { BookingDetail } from './pages/BookingDetail'
+import { Cart } from './pages/Cart'
+import { Login } from './pages/Login'
 import { ProductPage } from './pages/Product'
 import { Shop } from './pages/Shop'
 
@@ -21,6 +26,11 @@ function NotFound() {
 const router = createBrowserRouter([
   { path: '/', element: <Shop /> },
   { path: '/p/:id', element: <ProductPage /> },
+  { path: '/cart', element: <Cart /> },
+  { path: '/login', element: <Login mode="login" /> },
+  { path: '/register', element: <Login mode="register" /> },
+  { path: '/account', element: <Account /> },
+  { path: '/bookings/:code', element: <BookingDetail /> },
   // Admin pages load separately so shoppers' phones download less.
   { path: '/admin/login', hydrateFallbackElement: <Loading />, lazy: async () => ({ Component: (await import('./pages/admin/AdminLogin')).AdminLogin }) },
   {
@@ -42,7 +52,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
     </AuthProvider>
   </StrictMode>,
 )

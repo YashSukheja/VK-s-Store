@@ -106,7 +106,7 @@ test('admin fills in store settings and adds products with photos and stock', as
   if (shots) await page.screenshot({ path: `${shots}/admin-products.png` })
 })
 
-test('shoppers browse by category and see sizes, prices and the WhatsApp button', async ({ page, browser }) => {
+test('shoppers browse by category and see sizes and prices', async ({ page, browser }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'New in' })).toBeVisible()
   const shirt = page.getByRole('link', { name: /Oxford Shirt, Sky Blue/ })
@@ -130,8 +130,7 @@ test('shoppers browse by category and see sizes, prices and the WhatsApp button'
   await page.getByRole('button', { name: 'L', exact: true }).click()
   await page.getByRole('button', { name: 'Increase quantity' }).click()
   await expect(page.getByText('₹1,098')).toBeVisible()
-  const wa = page.getByRole('link', { name: 'Book on WhatsApp' })
-  await expect(wa).toHaveAttribute('href', /^https:\/\/wa\.me\/919876543210\?text=.*size%20L%2C%20quantity%202/)
+  await expect(page.getByRole('button', { name: 'Add to cart' })).toBeEnabled()
   if (shots) await page.screenshot({ path: `${shots}/product-phone.png` })
 
   const desktop = await browser.newPage({ viewport: { width: 1280, height: 860 } })

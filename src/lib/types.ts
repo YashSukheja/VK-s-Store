@@ -38,3 +38,29 @@ export type StoreSettings = {
   upi_id: string | null
   pickup_address: string | null
 }
+
+export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'rejected' | 'cancelled'
+
+export type BookingItem = {
+  id: string
+  product_id: string | null
+  product_name: string
+  size: string
+  quantity: number
+  price: number
+}
+
+export type Booking = {
+  id: string
+  code: string
+  customer_username: string
+  customer_mobile: string
+  status: BookingStatus
+  fulfilment: 'pickup' | 'delivery'
+  delivery_address: string | null
+  payment_method: 'cash' | 'upi'
+  note: string
+  total: number
+  created_at: string
+  booking_items: BookingItem[]
+}
