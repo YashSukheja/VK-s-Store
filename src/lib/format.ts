@@ -90,3 +90,18 @@ export function customerMessage(b: Booking, pickupAddress: string | null): strin
       return `${hi} `
   }
 }
+
+const LETTER_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL']
+
+/** Orders sizes the way people expect: S, M, L… then 28, 30, 32…, then anything else. */
+export function compareSizes(a: string, b: string): number {
+  const rank = (s: string) => {
+    const letter = LETTER_SIZES.indexOf(s.toUpperCase())
+    if (letter >= 0) return [0, letter] as const
+    const n = Number.parseFloat(s)
+    return Number.isNaN(n) ? ([2, 0] as const) : ([1, n] as const)
+  }
+  const [ga, va] = rank(a)
+  const [gb, vb] = rank(b)
+  return ga - gb || va - vb || a.localeCompare(b)
+}

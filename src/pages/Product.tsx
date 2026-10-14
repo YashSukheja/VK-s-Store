@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
-import { BackIcon, CheckIcon, ChatIcon, InfoIcon } from '../components/Icons'
+import { BackIcon, CheckIcon, ChatIcon, InfoIcon, ShareIcon } from '../components/Icons'
 import { Photo } from '../components/Photo'
 import { CartButton, SiteHeader } from '../components/SiteHeader'
 import { ProductPageSkeleton } from '../components/Skeletons'
@@ -125,11 +125,23 @@ export function ProductPage() {
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2.5">
-            {category && (
-              <Link to={`/?cat=${category.slug}`} className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
-                {category.name}
-              </Link>
-            )}
+            <div className="flex min-h-11 items-center justify-between gap-3">
+              {category ? (
+                <Link to={`/?cat=${category.slug}`} className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
+                  {category.name}
+                </Link>
+              ) : (
+                <span />
+              )}
+              <button
+                type="button"
+                onClick={() => void shareProduct(p.name, p.price, p.id)}
+                className="flex min-h-11 items-center gap-1.5 rounded-xl border-[1.5px] border-field px-3 text-sm font-extrabold"
+              >
+                <ShareIcon size={16} />
+                Share
+              </button>
+            </div>
             <h1 className="m-0 font-display text-[26px] font-extrabold leading-tight md:text-4xl">{p.name}</h1>
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="font-display text-[26px] font-black">{formatPrice(p.price)}</span>
@@ -285,6 +297,21 @@ export function ProductPage() {
       </div>
     </Shell>
   )
+}
+
+/** Opens the phone's share sheet; on computers without one, opens WhatsApp. */
+async function shareProduct(name: string, price: number, id: string) {
+  const url = `${window.location.origin}/p/${id}`
+  const text = `${name} for ${formatPrice(price)} at VK's Store`
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: name, text, url })
+    } catch {
+      // Closing the share sheet throws; nothing to do.
+    }
+    return
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, '_blank', 'noopener')
 }
 
 function Shell({ children, settings }: { children: ReactNode; settings?: Parameters<typeof SiteHeader>[0]['settings'] }) {

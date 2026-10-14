@@ -147,3 +147,62 @@ test('shoppers browse by category and see sizes and prices', async ({ page, brow
   if (shots) await desktop.screenshot({ path: `${shots}/shop-desktop.png` })
   await desktop.close()
 })
+
+test('shoppers search, filter by size, sort and share', async ({ page }) => {
+  // Record what the share sheet would get.
+  await page.addInitScript(() => {
+    window.__shared = null
+    navigator.share = async (data) => {
+      window.__shared = data
+    }
+  })
+  await page.goto('/')
+  const cards = page.locator('a[href^="/p/"]')
+  await expect(cards).toHaveCount(2)
+
+  // Search looks at names and descriptions, word by word.
+  await page.getByLabel('Search clothes').fill('cotton shirt')
+  await expect(page.getByRole('heading', { name: 'Results' })).toBeVisible()
+  await expect(cards).toHaveCount(1)
+  await expect(cards.first()).toContainText('Oxford Shirt')
+  await expect(page).toHaveURL(/q=cotton\+shirt/)
+  await page.getByLabel('Search clothes').fill('kurta')
+  await expect(page.getByText('Nothing matches “kurta”')).toBeVisible()
+  await page.getByRole('button', { name: 'Clear filters' }).click()
+  await expect(cards).toHaveCount(2)
+
+  // Size chips only list sizes that are in stock.
+  const sizes = page.getByRole('group', { name: 'Filter by size' })
+  await expect(sizes.getByRole('button')).toHaveText(['M', 'L', '32'])
+  await sizes.getByRole('button', { name: '32' }).click()
+  await expect(cards).toHaveCount(1)
+  await expect(cards.first()).toContainText('Slim Jeans')
+  await sizes.getByRole('button', { name: '32' }).click()
+  await expect(cards).toHaveCount(2)
+
+  // Sorting.
+  await expect(cards.first()).toContainText('Slim Jeans')
+  await page.getByLabel('Sort by').selectOption('price')
+  await expect(cards.first()).toContainText('Oxford Shirt')
+  await page.getByLabel('Sort by').selectOption('discount')
+  await expect(cards.first()).toContainText('Slim Jeans')
+
+  // Filters live in the link, so a shared link opens the same view.
+  await page.getByLabel('Sort by').selectOption('price-desc')
+  await sizes.getByRole('button', { name: 'L' }).click()
+  await page.goto('/?cat=shirts&size=L&sort=price-desc')
+  await expect(page.getByRole('heading', { name: 'Shirts' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Filter by size' }).getByRole('button', { name: 'L' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByLabel('Sort by')).toHaveValue('price-desc')
+  await expect(cards).toHaveCount(1)
+  // Picking another category keeps the sort but drops the size.
+  await page.getByRole('link', { name: 'Jeans', exact: true }).click()
+  await expect(page).toHaveURL(/\/\?cat=jeans&sort=price-desc$/)
+  if (shots) await page.screenshot({ path: `${shots}/shop-filters.png` })
+
+  await cards.first().click()
+  await page.getByRole('button', { name: 'Share' }).click()
+  const shared = await page.evaluate(() => window.__shared)
+  expect(shared.text).toBe("Slim Jeans, Dark Wash for ₹799 at VK's Store")
+  expect(shared.url).toMatch(/^http:\/\/localhost:5173\/p\/[0-9a-f-]{36}$/)
+})
