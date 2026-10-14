@@ -3,6 +3,8 @@
 {
   "name": "vk-s-store",
   "compatibility_date": "2026-10-01",
+  // Turn on the free vk-s-store.<account>.workers.dev address.
+  "workers_dev": true,
   "build": { "command": "npm run build" },
   "assets": {
     "directory": "./dist",
