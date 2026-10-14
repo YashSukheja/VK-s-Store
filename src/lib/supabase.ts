@@ -14,3 +14,8 @@ export const IMAGE_BUCKET = 'product-images'
 export function imageUrl(path: string): string {
   return supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path).data.publicUrl
 }
+
+/** The small copy of a photo (see thumbPath in images.ts). */
+export function thumbUrl(path: string): string {
+  return imageUrl(path.replace(/\.webp$/, '') + '.thumb.webp')
+}

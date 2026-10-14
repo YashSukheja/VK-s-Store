@@ -5,7 +5,7 @@ import { ArrowLeftIcon, ArrowRightIcon, BackIcon, CloseIcon, PlusIcon } from '..
 import { ErrorBox, Loading } from '../../components/States'
 import { fetchCategories, fetchProduct } from '../../data/catalog'
 import { sortedImages, sortedSizes } from '../../lib/format'
-import { compressPhoto } from '../../lib/images'
+import { compressPhoto, makeThumbnail, thumbPath } from '../../lib/images'
 import { IMAGE_BUCKET, imageUrl, supabase } from '../../lib/supabase'
 import type { Category, Product } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
@@ -14,7 +14,7 @@ const MAX_PHOTOS = 8
 
 type Photo =
   | { kind: 'saved'; key: string; id: string; path: string; url: string }
-  | { kind: 'new'; key: string; file: File; url: string }
+  | { kind: 'new'; key: string; file: File; thumb: File; url: string }
 
 type SizeRow = { size: string; stock: number }
 
@@ -86,10 +86,15 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
     setPreparing(true)
     setMessage(null)
     try {
-      const ready = await Promise.all(picked.map(compressPhoto))
+      const ready = await Promise.all(
+        picked.map(async (original) => {
+          const file = await compressPhoto(original)
+          return { file, thumb: await makeThumbnail(file) }
+        }),
+      )
       setPhotos((current) => [
         ...current,
-        ...ready.map((file) => ({ kind: 'new' as const, key: crypto.randomUUID(), file, url: URL.createObjectURL(file) })),
+        ...ready.map(({ file, thumb }) => ({ kind: 'new' as const, key: crypto.randomUUID(), file, thumb, url: URL.createObjectURL(file) })),
       ])
     } catch {
       setMessage({ kind: 'error', text: 'One of those photos could not be read. Try a JPG or PNG.' })
@@ -141,7 +146,7 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
       const productId = savedId as string
 
       if (removed.length) {
-        await supabase.storage.from(IMAGE_BUCKET).remove(removed.map((r) => r.path))
+        await supabase.storage.from(IMAGE_BUCKET).remove(removed.flatMap((r) => [r.path, thumbPath(r.path)]))
         const { error: delError } = await supabase.from('product_images').delete().in('id', removed.map((r) => r.id))
         if (delError) throw new Error(delError.message)
       }
@@ -155,6 +160,8 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
         const path = `${productId}/${crypto.randomUUID()}.webp`
         const { error: upError } = await supabase.storage.from(IMAGE_BUCKET).upload(path, photo.file, { contentType: 'image/webp' })
         if (upError) throw new Error(`Photo upload failed: ${upError.message}`)
+        // The small copy is a nice-to-have: the shop falls back to the big photo without it.
+        await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), photo.thumb, { contentType: 'image/webp' })
         const { error: rowError } = await supabase.from('product_images').insert({ product_id: productId, path, sort_order: index })
         if (rowError) throw new Error(rowError.message)
       }
@@ -170,7 +177,7 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
     if (!product) return
     if (!window.confirm(`Delete “${product.name}”? This removes it and its photos for good. To only hide it, switch off “Show in shop”.`)) return
     setSaving(true)
-    const paths = product.product_images.map((i) => i.path)
+    const paths = product.product_images.flatMap((i) => [i.path, thumbPath(i.path)])
     if (paths.length) await supabase.storage.from(IMAGE_BUCKET).remove(paths)
     const { error: delError } = await supabase.from('products').delete().eq('id', product.id)
     if (delError) {

@@ -1,4 +1,5 @@
-import { supabase } from '../lib/supabase'
+import { makeThumbnail, thumbPath } from '../lib/images'
+import { IMAGE_BUCKET, imageUrl, supabase, thumbUrl } from '../lib/supabase'
 import type { Booking, BookingStatus, Customer, ProductSize } from '../lib/types'
 import { BOOKING_COLUMNS } from './bookings'
 
@@ -114,4 +115,25 @@ export async function downloadBackup(): Promise<{ rows: number }> {
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
   return { rows }
+}
+
+/** Photos whose small copy hasn't been made yet (uploaded before small copies existed). */
+export async function findPhotosWithoutThumbnails(): Promise<string[]> {
+  const rows = unwrap(await supabase.from('product_images').select('path')) as { path: string }[]
+  const checks = await Promise.all(
+    rows.map(async ({ path }) => {
+      const res = await fetch(thumbUrl(path), { method: 'HEAD', cache: 'no-store' }).catch(() => null)
+      return res?.ok ? null : path
+    }),
+  )
+  return checks.filter((p): p is string => p !== null)
+}
+
+/** Makes the small copy for one photo from the big one. */
+export async function makeThumbnailFor(path: string): Promise<void> {
+  const res = await fetch(imageUrl(path), { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Couldn't download ${path}`)
+  const thumb = await makeThumbnail(await res.blob())
+  const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp' })
+  if (error) throw new Error(error.message)
 }

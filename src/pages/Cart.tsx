@@ -10,7 +10,7 @@ import { fetchProductsByIds, fetchSettings } from '../data/catalog'
 import { useAuth } from '../lib/auth'
 import { MAX_QTY, useCart } from '../lib/cart'
 import { formatPrice, sortedImages } from '../lib/format'
-import { imageUrl } from '../lib/supabase'
+import { imageUrl, thumbUrl } from '../lib/supabase'
 import type { Product } from '../lib/types'
 import { useAsync } from '../lib/useAsync'
 
@@ -103,7 +103,7 @@ export function Cart() {
           return (
             <li key={`${r.productId}-${r.size}`} className="flex gap-3 border-b border-line pb-3">
               <Link to={`/p/${r.productId}`} className="block h-24 w-[72px] flex-none overflow-hidden rounded-lg bg-photo">
-                <Photo src={cover ? imageUrl(cover.path) : undefined} alt={r.product?.name ?? 'Item'} />
+                <Photo src={cover ? thumbUrl(cover.path) : undefined} fallbackSrc={cover ? imageUrl(cover.path) : undefined} alt={r.product?.name ?? 'Item'} />
               </Link>
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="flex items-start justify-between gap-2">

@@ -5,8 +5,11 @@ function markLoaded(img: HTMLImageElement | null) {
   if (img?.complete && img.naturalWidth > 0) img.classList.add('loaded')
 }
 
-/** A product photo that fades in over a shimmer, or a calm placeholder when there is none. */
-export function Photo({ src, alt, className = '' }: { src?: string; alt: string; className?: string }) {
+/**
+ * A product photo that fades in over a shimmer, or a calm placeholder when there is none.
+ * fallbackSrc is tried if src fails (e.g. a small copy that hasn't been made yet).
+ */
+export function Photo({ src, fallbackSrc, alt, className = '' }: { src?: string; fallbackSrc?: string; alt: string; className?: string }) {
   if (src) {
     return (
       <div className="shimmer h-full w-full">
@@ -17,7 +20,11 @@ export function Photo({ src, alt, className = '' }: { src?: string; alt: string;
           loading="lazy"
           decoding="async"
           onLoad={(e) => e.currentTarget.classList.add('loaded')}
-          onError={(e) => e.currentTarget.classList.add('loaded')}
+          onError={(e) => {
+            const img = e.currentTarget
+            if (fallbackSrc && !img.src.endsWith(fallbackSrc)) img.src = fallbackSrc
+            else img.classList.add('loaded')
+          }}
           className={`photo-fade h-full w-full object-cover ${className}`}
         />
       </div>

@@ -114,6 +114,11 @@ test('shoppers browse by category and see sizes and prices', async ({ page, brow
   const shirt = page.getByRole('link', { name: /Oxford Shirt, Sky Blue/ })
   await expect(shirt).toBeVisible()
   await expect(shirt).toContainText('58% off')
+  // The grid shows the small copy of each photo, and it really loads.
+  const thumb = shirt.locator('img')
+  await expect(thumb).toHaveAttribute('src', /\.thumb\.webp$/)
+  await expect.poll(() => thumb.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0)
+  expect(await thumb.evaluate((img) => img.naturalWidth)).toBeLessThanOrEqual(480)
   await expect(page.getByRole('link', { name: /Slim Jeans/ })).toContainText('Only 1 left')
   if (shots) await page.screenshot({ path: `${shots}/shop-phone.png`, fullPage: true })
 

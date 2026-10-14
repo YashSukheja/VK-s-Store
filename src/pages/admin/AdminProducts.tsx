@@ -6,7 +6,7 @@ import { Photo } from '../../components/Photo'
 import { Empty, ErrorBox, Loading } from '../../components/States'
 import { fetchCategories, fetchProducts } from '../../data/catalog'
 import { formatPrice, sortedImages, totalStock } from '../../lib/format'
-import { imageUrl } from '../../lib/supabase'
+import { imageUrl, thumbUrl } from '../../lib/supabase'
 import { useAsync } from '../../lib/useAsync'
 
 export function AdminProducts() {
@@ -56,7 +56,7 @@ export function AdminProducts() {
             <li key={p.id}>
               <Link to={`/admin/products/${p.id}`} className="flex items-center gap-3 rounded-2xl bg-white p-3">
                 <div className="h-[72px] w-14 flex-none overflow-hidden rounded-lg bg-photo">
-                  <Photo src={cover ? imageUrl(cover.path) : undefined} alt="" className="[&_span]:hidden" />
+                  <Photo src={cover ? thumbUrl(cover.path) : undefined} fallbackSrc={cover ? imageUrl(cover.path) : undefined} alt="" className="[&_span]:hidden" />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate text-[15px] font-bold">{p.name}</span>

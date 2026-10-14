@@ -1,7 +1,7 @@
 // Runs after catalog.spec.mjs and customer.spec.mjs: VK-1001 (Oxford Shirt L ×2,
 // Slim Jeans 32 ×1) is waiting, and only one pair of jeans is in stock.
 import { expect, test } from '@playwright/test'
-import { makeUser, totp } from '../tests/helpers.mjs'
+import { makeUser, service, totp } from '../tests/helpers.mjs'
 
 test.describe.configure({ mode: 'serial' })
 
@@ -96,7 +96,15 @@ test('VK sets a new password for a customer and turns on phone alerts', async ({
   await expect(row.getByRole('link', { name: 'Send on WhatsApp' })).toHaveAttribute('href', /fresh-pass-456/)
   if (shots) await page.screenshot({ path: `${shots}/admin-customers.png` })
 
+  // An older photo without a small copy gets one from Settings.
+  const { data: photo } = await service().from('product_images').select('path').limit(1).single()
+  await service().storage.from('product-images').remove([photo.path.replace(/\.webp$/, '.thumb.webp')])
+
   await page.getByRole('link', { name: 'Settings' }).click()
+  await page.getByRole('button', { name: 'Make small photos (1)' }).click()
+  await expect(page.getByText('Done. 1 small photo made.')).toBeVisible()
+  await expect(page.getByText('All photos have a small copy.')).toBeVisible()
+
   await page.getByRole('button', { name: 'Turn on phone alerts' }).click()
   await expect(page.getByLabel('Alert channel name')).toHaveText(/^vks-[a-z0-9]{30}$/)
   await page.getByRole('button', { name: 'Send test alert' }).click()

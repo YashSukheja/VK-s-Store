@@ -7,6 +7,7 @@ import type { StoreSettings } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
 import { AlertSettings } from './AlertSettings'
 import { BackupSettings } from './BackupSettings'
+import { ThumbnailSettings } from './ThumbnailSettings'
 
 export function AdminSettings() {
   const { data, error, loading, reload } = useAsync(fetchSettings, [])
@@ -16,6 +17,7 @@ export function AdminSettings() {
     <div className="flex flex-col gap-6">
       <SettingsForm initial={data} />
       <AlertSettings />
+      <ThumbnailSettings />
       <BackupSettings />
     </div>
   )
