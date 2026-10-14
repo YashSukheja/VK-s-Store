@@ -1,4 +1,5 @@
 import { Link, Navigate } from 'react-router'
+import { InstallApp } from '../components/InstallApp'
 import { Page } from '../components/Page'
 import { StatusPill } from '../components/StatusPill'
 import { Empty, ErrorBox, Loading } from '../components/States'
@@ -40,6 +41,8 @@ export function Account() {
           Log out
         </button>
       </div>
+
+      <InstallApp label="Add VK's Store to your home screen" />
 
       {role === 'admin' && (
         <Link to="/admin" className="text-sm font-extrabold underline underline-offset-4">

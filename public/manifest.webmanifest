@@ -1,0 +1,18 @@
+{
+  "name": "VK's Store",
+  "short_name": "VK's Store",
+  "description": "Fresh clothing picks at local prices. Book online, pay cash or UPI at pickup or delivery.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Bookings (admin)", "url": "/admin/bookings", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

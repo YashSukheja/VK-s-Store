@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react'
 import { useAsync } from '../lib/useAsync'
+import { useTitle } from '../lib/useTitle'
 import { fetchSettings } from '../data/catalog'
 import { SiteHeader } from './SiteHeader'
 
 /** Shop header plus a narrow column, for cart, login and booking pages. */
 export function Page({ title, children }: { title: string; children: ReactNode }) {
   const settings = useAsync(fetchSettings, [])
+  useTitle(title)
   return (
     <div className="min-h-dvh bg-white">
       <SiteHeader settings={settings.data} />

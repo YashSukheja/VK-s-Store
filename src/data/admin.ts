@@ -75,3 +75,43 @@ export async function sendTestAlert(): Promise<void> {
   const { error } = await supabase.rpc('admin_test_phone_alert')
   if (error) throw new Error(error.message)
 }
+
+const BACKUP_TABLES = [
+  'categories',
+  'products',
+  'product_sizes',
+  'product_images',
+  'store_settings',
+  'profiles',
+  'bookings',
+  'booking_items',
+] as const
+
+/** Everything in the database (except logins and passwords), as one JSON file. */
+export async function downloadBackup(): Promise<{ rows: number }> {
+  const tables: Record<string, unknown[]> = {}
+  let rows = 0
+  for (const table of BACKUP_TABLES) {
+    const all: unknown[] = []
+    // Page through in chunks so big tables come back whole.
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase.from(table).select('*').range(from, from + 999)
+      if (error) throw new Error(`${table}: ${error.message}`)
+      all.push(...data)
+      if (data.length < 1000) break
+    }
+    tables[table] = all
+    rows += all.length
+  }
+  const date = new Date().toISOString().slice(0, 10)
+  const blob = new Blob([JSON.stringify({ app: "VK's Store", made_at: new Date().toISOString(), tables }, null, 1)], {
+    type: 'application/json',
+  })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `vks-store-backup-${date}.json`
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+  return { rows }
+}

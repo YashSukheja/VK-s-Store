@@ -4,7 +4,7 @@ A mobile-first shop website for VK's Store: customers browse clothes by category
 
 Built with React + TypeScript + Tailwind CSS (Vite), with Supabase for the database, logins and photo storage. Everything runs on free plans.
 
-## What's built (phases 2 to 4: catalog, customer accounts, bookings, admin bookings)
+## What's built (phases 2 to 5)
 
 - **Shop** (`/`): category bar on phones, sidebar on larger screens; "Only N left" and "Sold out" labels.
 - **Product page** (`/p/:id`): swipeable photos, MRP and saving, size buttons with stock, quantity, Add to cart.
@@ -14,6 +14,9 @@ Built with React + TypeScript + Tailwind CSS (Vite), with Supabase for the datab
 - **48-hour auto-cancel**: a `pg_cron` job (`vks-auto-cancel-bookings`, every 15 minutes) cancels bookings still waiting after 48 hours.
 - **Phone alerts**: Admin > Settings > Phone alerts creates a private channel for the free ntfy app; every new booking sends the booking code and total (no customer details) through `pg_net`.
 - **Customers** (`/admin/customers`): contacts, booking counts, and "Set a new password" for customers who forgot theirs.
+- **Installable app**: `manifest.webmanifest`, icons and a small service worker (`public/sw.js`) so the site can be added to the home screen and reopens offline. Supabase data is never cached.
+- **Backup**: Admin > Settings > Download backup saves every table (not logins) as one JSON file.
+- **Sharing preview**: `og-image.png` shows when the link is shared on WhatsApp. Its tag in `index.html` uses the full workers.dev address; change it if the address changes.
 - **After booking** (`/bookings/:code`): "Send to VK on WhatsApp" opens WhatsApp with the booking ID, customer, items, sizes, quantities, prices, total and time. `/account` lists the customer's bookings and statuses.
 - **Admin** (`/admin`): email + password, then a 6-digit code from an authenticator app (Google Authenticator). Products with up to 8 photos (shrunk on the phone before upload), size stock, show/hide; categories with size lists; store settings (WhatsApp number, UPI ID, pickup address).
 

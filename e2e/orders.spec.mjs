@@ -102,6 +102,16 @@ test('VK sets a new password for a customer and turns on phone alerts', async ({
   await page.getByRole('button', { name: 'Send test alert' }).click()
   await expect(page.getByText('Test sent.')).toBeVisible()
   if (shots) await page.screenshot({ path: `${shots}/admin-alerts.png`, fullPage: true })
+
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download backup' }).click()
+  const file = await download
+  expect(file.suggestedFilename()).toMatch(/^vks-store-backup-\d{4}-\d{2}-\d{2}\.json$/)
+  const backup = JSON.parse(await (await import('node:fs/promises')).readFile(await file.path(), 'utf8'))
+  expect(backup.tables.bookings.map((b) => b.code)).toEqual(expect.arrayContaining(['VK-1001', 'VK-1002']))
+  expect(backup.tables.products.length).toBeGreaterThanOrEqual(2)
+  expect(JSON.stringify(backup)).not.toContain('encrypted_password')
+  await expect(page.getByText(/Backup downloaded \(\d+ records\)/)).toBeVisible()
 })
 
 test('the customer logs in with the new password and sees the result', async ({ page }) => {

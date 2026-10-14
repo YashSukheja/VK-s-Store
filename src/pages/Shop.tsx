@@ -6,6 +6,7 @@ import { Empty, ErrorBox, Loading } from '../components/States'
 import { fetchCategories, fetchProducts, fetchSettings } from '../data/catalog'
 import { totalStock } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
+import { useTitle } from '../lib/useTitle'
 
 export function Shop() {
   const [params] = useSearchParams()
@@ -16,6 +17,7 @@ export function Shop() {
 
   const [categories, products] = catalog.data ?? [[], []]
   const active = categories.find((c) => c.slug === activeSlug)
+  useTitle(active?.name)
 
   const shown = useMemo(() => {
     const list = active ? products.filter((p) => p.category_id === active.id) : products

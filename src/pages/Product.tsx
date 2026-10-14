@@ -9,6 +9,7 @@ import { discountPercent, formatPrice, LOW_STOCK, sortedImages, sortedSizes, wha
 import { MAX_QTY, useCart } from '../lib/cart'
 import { imageUrl } from '../lib/supabase'
 import { useAsync } from '../lib/useAsync'
+import { useTitle } from '../lib/useTitle'
 
 export function ProductPage() {
   const { id = '' } = useParams()
@@ -19,6 +20,7 @@ export function ProductPage() {
   const [photoIndex, setPhotoIndex] = useState(0)
   const [added, setAdded] = useState<string | null>(null)
   const cart = useCart()
+  useTitle(product.data?.[0]?.name)
 
   if (product.loading) {
     return (
