@@ -109,6 +109,7 @@ test('waiting bookings older than 48 hours cancel themselves', async () => {
 })
 
 test('new bookings send a phone alert once a channel is set; settings stay private', async () => {
+  await boss.from('admin_settings').update({ ntfy_topic: null }).eq('id', 1)
   const p = await product(2)
   const a = await customer()
   // pg_net sends from a queue in the background; count queued plus answered requests.

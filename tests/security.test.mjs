@@ -36,7 +36,7 @@ test('visitors can read categories and settings but not write', async () => {
 
 test('a customer cannot change the catalog or make themselves admin', async () => {
   const email = `cust${stamp}@example.com`
-  await makeUser(email, PASSWORD, { meta: { username: `cust${stamp}`.slice(0, 20), mobile: '9876500000' } })
+  await makeUser(email, PASSWORD, { meta: { username: `cust${stamp}`.slice(0, 20), mobile: `98${String(stamp).slice(-8)}` } })
   const c = await signedIn(email)
   const { data: role } = await c.rpc('my_role')
   assert.equal(role, 'customer')
@@ -116,7 +116,7 @@ test('admin after the authenticator step can manage products, stock and photos',
 
   // A customer can't edit stock even on a visible product.
   const custEmail = `cust2${stamp}@example.com`
-  await makeUser(custEmail, PASSWORD, { meta: { username: `c2${stamp}`.slice(0, 20), mobile: '9876500001' } })
+  await makeUser(custEmail, PASSWORD, { meta: { username: `c2${stamp}`.slice(0, 20), mobile: `97${String(stamp).slice(-8)}` } })
   const cust = await signedIn(custEmail)
   const { data: hacked } = await cust.from('product_sizes').update({ stock: 99 }).eq('product_id', id).select()
   assert.equal(hacked?.length ?? 0, 0)
