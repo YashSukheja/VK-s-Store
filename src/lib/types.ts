@@ -62,5 +62,15 @@ export type Booking = {
   note: string
   total: number
   created_at: string
+  auto_cancelled: boolean
+  customer_id: string | null
   booking_items: BookingItem[]
+}
+
+export type Customer = {
+  id: string
+  username: string
+  mobile: string | null
+  created_at: string
+  bookings: { count: number }[]
 }

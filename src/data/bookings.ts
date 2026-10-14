@@ -2,8 +2,8 @@ import type { CartLine } from '../lib/cart'
 import { supabase } from '../lib/supabase'
 import type { Booking } from '../lib/types'
 
-const BOOKING_COLUMNS =
-  'id, code, customer_username, customer_mobile, status, fulfilment, delivery_address, payment_method, note, total, created_at, booking_items(id, product_id, product_name, size, quantity, price)'
+export const BOOKING_COLUMNS =
+  'id, code, customer_username, customer_mobile, status, fulfilment, delivery_address, payment_method, note, total, created_at, auto_cancelled, customer_id, booking_items(id, product_id, product_name, size, quantity, price)'
 
 export type BookingRequest = {
   lines: CartLine[]

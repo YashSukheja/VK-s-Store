@@ -1,10 +1,14 @@
+import { useEffect, useState } from 'react'
 import { Navigate, NavLink, Outlet } from 'react-router'
 import { Logo } from '../../components/Logo'
 import { Loading } from '../../components/States'
+import { BOOKINGS_CHANGED, fetchPendingCount } from '../../data/admin'
 import { useAuth } from '../../lib/auth'
 
 const tabs = [
+  { to: '/admin/bookings', label: 'Bookings' },
   { to: '/admin/products', label: 'Products' },
+  { to: '/admin/customers', label: 'Customers' },
   { to: '/admin/categories', label: 'Categories' },
   { to: '/admin/settings', label: 'Settings' },
 ]
@@ -12,6 +16,7 @@ const tabs = [
 /** Admin pages need the admin role and the authenticator step. The database checks this too. */
 export function AdminLayout() {
   const { session, role, aal, loading, signOut } = useAuth()
+  const waiting = usePendingCount(!loading && role === 'admin' && aal === 'aal2')
 
   if (loading) return <Loading />
   if (!session || role !== 'admin' || aal !== 'aal2') return <Navigate to="/admin/login" replace />
@@ -35,6 +40,11 @@ export function AdminLayout() {
               }
             >
               {t.label}
+              {t.to === '/admin/bookings' && waiting > 0 && (
+                <span aria-label={`${waiting} waiting`} className="ml-1.5 rounded-full bg-accent px-1.5 text-xs font-black text-ink">
+                  {waiting}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -44,4 +54,32 @@ export function AdminLayout() {
       </main>
     </div>
   )
+}
+
+/** Waiting bookings, refreshed every minute, when the tab comes back into view, and after changes. */
+function usePendingCount(enabled: boolean): number {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (!enabled) return
+    let alive = true
+    const load = () =>
+      fetchPendingCount()
+        .then((n) => alive && setCount(n))
+        .catch(() => {})
+    void load()
+    const timer = window.setInterval(load, 60_000)
+    const onVisible = () => document.visibilityState === 'visible' && void load()
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener(BOOKINGS_CHANGED, load)
+    return () => {
+      alive = false
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener(BOOKINGS_CHANGED, load)
+    }
+  }, [enabled])
+  useEffect(() => {
+    document.title = count > 0 ? `(${count}) VK's Store admin` : "VK's Store admin"
+  }, [count])
+  return count
 }

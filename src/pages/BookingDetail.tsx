@@ -77,6 +77,11 @@ export function BookingDetail() {
         <span className="text-sm text-muted">{formatDateTime(b.created_at)}</span>
         <StatusPill status={b.status} />
       </div>
+      {b.auto_cancelled && (
+        <p className="m-0 rounded-xl bg-surface px-3.5 py-3 text-sm text-body">
+          This booking was cancelled because it wasn't confirmed within 48 hours. Message VK if you still want these clothes.
+        </p>
+      )}
 
       <ul className="m-0 flex list-none flex-col gap-2 rounded-2xl bg-surface p-4">
         {b.booking_items.map((i) => (

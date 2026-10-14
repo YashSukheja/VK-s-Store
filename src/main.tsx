@@ -38,7 +38,9 @@ const router = createBrowserRouter([
     hydrateFallbackElement: <Loading />,
     lazy: async () => ({ Component: (await import('./pages/admin/AdminLayout')).AdminLayout }),
     children: [
-      { index: true, element: <Navigate to="/admin/products" replace /> },
+      { index: true, element: <Navigate to="/admin/bookings" replace /> },
+      { path: 'bookings', lazy: async () => ({ Component: (await import('./pages/admin/AdminBookings')).AdminBookings }) },
+      { path: 'customers', lazy: async () => ({ Component: (await import('./pages/admin/AdminCustomers')).AdminCustomers }) },
       { path: 'products', lazy: async () => ({ Component: (await import('./pages/admin/AdminProducts')).AdminProducts }) },
       { path: 'products/new', lazy: async () => ({ Component: (await import('./pages/admin/AdminProductEdit')).AdminProductEdit }) },
       { path: 'products/:id', lazy: async () => ({ Component: (await import('./pages/admin/AdminProductEdit')).AdminProductEdit }) },

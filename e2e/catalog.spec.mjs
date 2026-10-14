@@ -26,7 +26,9 @@ test('admin sets up the authenticator app and logs in', async ({ page }) => {
   if (shots) await page.screenshot({ path: `${shots}/admin-setup.png` })
   await page.getByLabel('6-digit code').fill(totp(secret))
   await page.getByRole('button', { name: 'Finish setup' }).click()
-  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bookings' })).toBeVisible()
+  await expect(page.getByText('No bookings waiting')).toBeVisible()
+  await page.getByRole('link', { name: 'Products' }).click()
   await expect(page.getByText('No products yet')).toBeVisible()
 })
 
@@ -38,7 +40,7 @@ async function login(page) {
   await expect(page.getByRole('heading', { name: 'Enter your code' })).toBeVisible()
   await page.getByLabel('6-digit code').fill(totp(secret))
   await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bookings' })).toBeVisible()
 }
 
 test('wrong code is refused; admin pages stay locked', async ({ page }) => {

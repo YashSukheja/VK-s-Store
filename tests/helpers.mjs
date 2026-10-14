@@ -1,4 +1,5 @@
 // Shared helpers for tests that run against the local Supabase stack (npx supabase start).
+import { execFileSync } from 'node:child_process'
 import { createHmac } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 
@@ -38,4 +39,12 @@ export async function makeUser(email, password, { admin = false, meta = {} } = {
     if (e2) throw e2
   }
   return data.user
+}
+
+/** Runs SQL as the database owner in the local stack (for checks the API can't do). */
+export function psql(sql) {
+  return execFileSync('docker', ['exec', '-i', 'supabase_db_vks-store', 'psql', '-U', 'postgres', '-tAq', '-v', 'ON_ERROR_STOP=1'], {
+    input: sql,
+    encoding: 'utf8',
+  }).trim()
 }

@@ -71,3 +71,22 @@ export function bookingMessage(b: Booking): string {
     `Booked: ${formatDateTime(b.created_at)}`,
   ].join('\n')
 }
+
+/** What VK sends the customer on WhatsApp after confirming or rejecting. */
+export function customerMessage(b: Booking, pickupAddress: string | null): string {
+  const hi = `Hi ${b.customer_username}, this is VK's Store about your booking ${b.code} (${formatPrice(b.total)}).`
+  switch (b.status) {
+    case 'confirmed':
+      return b.fulfilment === 'pickup'
+        ? `${hi} It's confirmed! Your clothes are kept aside for you. Pick them up at: ${pickupAddress ?? 'the shop'}.`
+        : `${hi} It's confirmed! We'll deliver to: ${b.delivery_address}.`
+    case 'completed':
+      return `${hi} Thank you for shopping with us!`
+    case 'rejected':
+      return `${hi} Sorry, we couldn't confirm it this time. The items are no longer available.`
+    case 'cancelled':
+      return `${hi} Your booking has been cancelled.`
+    default:
+      return `${hi} `
+  }
+}

@@ -5,12 +5,18 @@ import { fetchSettings } from '../../data/catalog'
 import { supabase } from '../../lib/supabase'
 import type { StoreSettings } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
+import { AlertSettings } from './AlertSettings'
 
 export function AdminSettings() {
   const { data, error, loading, reload } = useAsync(fetchSettings, [])
   if (loading) return <Loading />
   if (error || !data) return <ErrorBox message={error ?? 'Settings not found.'} onRetry={reload} />
-  return <SettingsForm initial={data} />
+  return (
+    <div className="flex flex-col gap-6">
+      <SettingsForm initial={data} />
+      <AlertSettings />
+    </div>
+  )
 }
 
 function SettingsForm({ initial }: { initial: StoreSettings }) {
