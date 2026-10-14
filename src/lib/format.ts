@@ -105,3 +105,12 @@ export function compareSizes(a: string, b: string): number {
   const [gb, vb] = rank(b)
   return ga - gb || va - vb || a.localeCompare(b)
 }
+
+/** Products count as new for their first week. */
+export const NEW_DAYS = 7
+
+/** The corner tag for a product: SALE when the admin switched it on, else NEW for its first week. */
+export function productTag(p: Pick<Product, 'on_sale' | 'created_at'>, now = Date.now()): 'SALE' | 'NEW' | null {
+  if (p.on_sale) return 'SALE'
+  return now - new Date(p.created_at).getTime() < NEW_DAYS * 864e5 ? 'NEW' : null
+}

@@ -8,6 +8,7 @@ import { fetchSettings } from '../../data/catalog'
 import { customerMessage, formatDateTime, formatPrice, whatsappLink } from '../../lib/format'
 import type { Booking, BookingStatus } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
+import { SalesSummary } from './SalesSummary'
 
 const VIEWS = [
   { key: 'waiting', label: 'Waiting', statuses: ['pending'] },
@@ -41,6 +42,7 @@ export function AdminBookings() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="m-0 font-display text-2xl font-black uppercase">Bookings</h1>
+      <SalesSummary />
       <div role="tablist" aria-label="Booking status" className="grid grid-cols-3 gap-1 rounded-xl bg-white p-1">
         {VIEWS.map((v) => (
           <button

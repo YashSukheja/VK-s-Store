@@ -7,6 +7,7 @@ import type { StoreSettings } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
 import { AlertSettings } from './AlertSettings'
 import { BackupSettings } from './BackupSettings'
+import { PasswordSettings } from './PasswordSettings'
 import { ThumbnailSettings } from './ThumbnailSettings'
 
 export function AdminSettings() {
@@ -19,6 +20,7 @@ export function AdminSettings() {
       <AlertSettings />
       <ThumbnailSettings />
       <BackupSettings />
+      <PasswordSettings />
     </div>
   )
 }

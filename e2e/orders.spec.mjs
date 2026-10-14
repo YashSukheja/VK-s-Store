@@ -72,8 +72,15 @@ test('VK confirms one booking, the other can no longer be confirmed, and stock d
   await expect(page.getByLabel(/waiting$/)).toHaveCount(0)
 
   await page.getByRole('tab', { name: 'Confirmed' }).click()
+  const sales = page.getByRole('region', { name: 'Sales' })
+  await expect(sales).toContainText('Today₹00 pieces')
   await page.getByRole('button', { name: 'Mark delivered' }).click()
   await page.getByRole('button', { name: 'OK' }).click()
+  // The delivered booking counts as a sale straight away.
+  await expect(sales).toContainText('Today₹1,8973 pieces')
+  await sales.getByText('Best sellers this month').click()
+  await expect(sales.getByRole('listitem').first()).toHaveText('Oxford Shirt, Sky Blue · 2 sold')
+  if (shots) await page.screenshot({ path: `${shots}/admin-sales.png` })
   await page.getByRole('tab', { name: 'Done' }).click()
   await expect(page.getByRole('listitem').filter({ hasText: 'VK-1001' }).getByText('Completed')).toBeVisible()
   await expect(page.getByRole('listitem').filter({ hasText: 'VK-1002' }).getByText('Rejected')).toBeVisible()
@@ -128,4 +135,40 @@ test('the customer logs in with the new password and sees the result', async ({ 
   await page.getByLabel('Password').fill('fresh-pass-456')
   await page.getByRole('button', { name: 'Log in' }).click()
   await expect(page.getByRole('link', { name: /VK-1002/ })).toContainText('Rejected')
+})
+
+test('VK changes stock from the list, tags a product SALE and changes the admin password', async ({ page }) => {
+  await adminLogin(page)
+  await page.getByRole('link', { name: 'Products' }).click()
+  const shirt = page.getByRole('listitem').filter({ hasText: 'Oxford Shirt, Sky Blue' }).first()
+  await expect(shirt).toContainText('2 in stock')
+  await shirt.getByRole('button', { name: 'One more M of Oxford Shirt, Sky Blue' }).click()
+  await expect(shirt).toContainText('3 in stock')
+  await expect(shirt.getByRole('button', { name: 'One less S of Oxford Shirt, Sky Blue' })).toBeDisabled()
+  if (shots) await page.screenshot({ path: `${shots}/admin-quick-stock.png` })
+  await page.reload()
+  await expect(page.getByRole('listitem').filter({ hasText: 'Oxford Shirt, Sky Blue' }).first()).toContainText('3 in stock')
+
+  await page.getByRole('link', { name: /Oxford Shirt, Sky Blue/ }).click()
+  await page.getByText('Show SALE tag').click()
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page.getByText('Saved. It’s live in the shop.')).toBeVisible()
+
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: /Oxford Shirt/ })).toContainText('SALE')
+  // Added today, so the jeans show NEW.
+  await expect(page.getByRole('link', { name: /Slim Jeans/ })).toContainText('NEW')
+  if (shots) await page.screenshot({ path: `${shots}/shop-tags.png` })
+
+  await page.goto('/admin/settings')
+  await page.getByLabel('New password').fill('brand-new-admin-pass')
+  await page.getByLabel('Type it again').fill('brand-new-admin-pas')
+  await page.getByRole('button', { name: 'Change password' }).click()
+  await expect(page.getByText('The two passwords don’t match.')).toBeVisible()
+  await page.getByLabel('Type it again').fill('brand-new-admin-pass')
+  await page.getByRole('button', { name: 'Change password' }).click()
+  await expect(page.getByText('Password changed.')).toBeVisible()
+  admin.password = 'brand-new-admin-pass'
+  await page.getByRole('button', { name: /Log out/ }).click()
+  await adminLogin(page)
 })

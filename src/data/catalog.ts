@@ -2,7 +2,8 @@ import { supabase } from '../lib/supabase'
 import type { Category, Product, StoreSettings } from '../lib/types'
 
 const PRODUCT_COLUMNS =
-  'id, category_id, name, description, mrp, price, is_visible, created_at, product_images(id, path, sort_order), product_sizes(id, size, stock, sort_order)'
+  // `*` picks up newer columns like on_sale once their SQL has run, without breaking before.
+  '*, product_images(id, path, sort_order), product_sizes(id, size, stock, sort_order)'
 
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message)

@@ -28,6 +28,8 @@ export type Product = {
   mrp: number | null
   price: number
   is_visible: boolean
+  /** Missing until setup file 5 has been run. */
+  on_sale?: boolean
   created_at: string
   product_images: ProductImage[]
   product_sizes: ProductSize[]

@@ -150,3 +150,21 @@ test('the admin can set a new password for a customer', async () => {
   const { error: newErr } = await client().auth.signInWithPassword({ email: a.email, password: 'brand-new-pass' })
   assert.ifError(newErr)
 })
+
+test('only the admin can change stock quickly or set the SALE tag; stock never goes below zero', async () => {
+  const p = await product(1)
+  const a = await customer()
+  const sizeId = (await service().from('product_sizes').select('id').eq('product_id', p.id).single()).data.id
+
+  const { error: custErr } = await a.c.rpc('admin_adjust_stock', { p_size_id: sizeId, p_change: 5 })
+  assert.ok(custErr)
+  assert.equal((await boss.rpc('admin_adjust_stock', { p_size_id: sizeId, p_change: 2 })).data, 3)
+  assert.equal((await boss.rpc('admin_adjust_stock', { p_size_id: sizeId, p_change: -10 })).data, 0)
+  assert.equal(await stockOf(p), 0)
+
+  await a.c.from('products').update({ on_sale: true }).eq('id', p.id)
+  const peek = async () => (await service().from('products').select('on_sale').eq('id', p.id).single()).data.on_sale
+  assert.equal(await peek(), false, 'customers cannot tag products')
+  assert.ifError((await boss.from('products').update({ on_sale: true }).eq('id', p.id)).error)
+  assert.equal(await peek(), true)
+})

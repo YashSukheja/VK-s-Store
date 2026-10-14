@@ -6,7 +6,8 @@ import { CartButton, SiteHeader } from '../components/SiteHeader'
 import { ProductPageSkeleton } from '../components/Skeletons'
 import { ErrorBox } from '../components/States'
 import { fetchCategories, fetchProduct, fetchSettings } from '../data/catalog'
-import { discountPercent, formatPrice, LOW_STOCK, sortedImages, sortedSizes, whatsappLink } from '../lib/format'
+import { discountPercent, formatPrice, LOW_STOCK, productTag, sortedImages, sortedSizes, whatsappLink } from '../lib/format'
+import { Tag } from '../components/ProductCard'
 import { MAX_QTY, useCart } from '../lib/cart'
 import { imageUrl } from '../lib/supabase'
 import { flyToCart } from '../lib/flyToCart'
@@ -58,6 +59,7 @@ export function ProductPage() {
   const sizes = sortedSizes(p)
   const category = categories.find((c) => c.id === p.category_id)
   const off = discountPercent(p.price, p.mrp)
+  const tag = productTag(p)
   const firstAvailable = sizes.find((s) => s.stock > 0)
   const current = sizes.find((s) => s.size === pickedSize && s.stock > 0) ?? firstAvailable
   const inCart = current ? (cart.lines.find((l) => l.productId === p.id && l.size === current.size)?.quantity ?? 0) : 0
@@ -145,6 +147,7 @@ export function ProductPage() {
             <h1 className="m-0 font-display text-[26px] font-extrabold leading-tight md:text-4xl">{p.name}</h1>
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="font-display text-[26px] font-black">{formatPrice(p.price)}</span>
+              {tag && <Tag tag={tag} className={tag === 'NEW' ? 'border-[1.5px] border-ink' : ''} />}
               {off !== null && p.mrp && (
                 <>
                   <span className="text-[15px] text-muted line-through">MRP {formatPrice(p.mrp)}</span>

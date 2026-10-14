@@ -137,3 +137,26 @@ export async function makeThumbnailFor(path: string): Promise<void> {
   const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp' })
   if (error) throw new Error(error.message)
 }
+
+/** Adds or removes pieces of one size in one step on the server. Returns the new stock. */
+export async function adjustStock(sizeId: string, change: number): Promise<number> {
+  const { data, error } = await supabase.rpc('admin_adjust_stock', { p_size_id: sizeId, p_change: change })
+  if (error) {
+    throw new Error(error.message.includes('admin_adjust_stock') ? 'Quick stock needs setup file 5. Run it in Supabase first.' : error.message)
+  }
+  return data as number
+}
+
+export type Sale = { total: number; status_changed_at: string; booking_items: { product_name: string; quantity: number }[] }
+
+/** Finished (collected or delivered) bookings since a date, for the sales summary. */
+export async function fetchSalesSince(since: Date): Promise<Sale[]> {
+  return unwrap(
+    await supabase
+      .from('bookings')
+      .select('total, status_changed_at, booking_items(product_name, quantity)')
+      .eq('status', 'completed')
+      .gte('status_changed_at', since.toISOString())
+      .limit(2000),
+  ) as Sale[]
+}

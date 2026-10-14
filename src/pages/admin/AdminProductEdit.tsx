@@ -51,6 +51,7 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
   const [mrp, setMrp] = useState(product?.mrp ? String(product.mrp) : '')
   const [price, setPrice] = useState(product ? String(product.price) : '')
   const [visible, setVisible] = useState(product?.is_visible ?? true)
+  const [onSale, setOnSale] = useState(product?.on_sale ?? false)
   const [sizes, setSizes] = useState<SizeRow[]>(() => {
     if (product) {
       const saved = sortedSizes(product).map((s) => ({ size: s.size, stock: s.stock }))
@@ -144,6 +145,11 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
       })
       if (saveError) throw new Error(saveError.message)
       const productId = savedId as string
+
+      if (onSale !== (product?.on_sale ?? false)) {
+        const { error: saleError } = await supabase.from('products').update({ on_sale: onSale }).eq('id', productId)
+        if (saleError) throw new Error(saleError.message.includes('on_sale') ? 'The SALE tag needs setup file 5. Run it in Supabase first.' : saleError.message)
+      }
 
       if (removed.length) {
         await supabase.storage.from(IMAGE_BUCKET).remove(removed.flatMap((r) => [r.path, thumbPath(r.path)]))
@@ -279,6 +285,8 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
 
       <Card>
         <Toggle label="Show in shop" checked={visible} onChange={setVisible} />
+        <Toggle label="Show SALE tag" checked={onSale} onChange={setOnSale} />
+        <p className="m-0 -mt-2 text-xs font-semibold text-muted">New products show a NEW tag for their first 7 days by themselves.</p>
       </Card>
 
       {message && <Notice kind={message.kind}>{message.text}</Notice>}

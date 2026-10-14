@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
-import { discountPercent, formatPrice, LOW_STOCK, sortedImages, totalStock } from '../lib/format'
+import { discountPercent, formatPrice, LOW_STOCK, productTag, sortedImages, totalStock } from '../lib/format'
 import { imageUrl, thumbUrl } from '../lib/supabase'
 import type { Product } from '../lib/types'
 import { Photo } from './Photo'
@@ -9,6 +9,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   const cover = sortedImages(product)[0]
   const stock = totalStock(product)
   const off = discountPercent(product.price, product.mrp)
+  const tag = productTag(product)
 
   return (
     <Link
@@ -26,6 +27,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             Only {stock} left
           </span>
         )}
+        {tag && <Tag tag={tag} className="absolute right-2 top-2" />}
       </div>
       <span className="text-sm font-semibold leading-snug">{product.name}</span>
       <span className="flex flex-wrap items-baseline gap-1.5">
@@ -38,5 +40,15 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         )}
       </span>
     </Link>
+  )
+}
+
+export function Tag({ tag, className = '' }: { tag: 'SALE' | 'NEW'; className?: string }) {
+  return (
+    <span
+      className={`rounded-md px-2 py-1 text-[11px] font-extrabold uppercase ${tag === 'SALE' ? 'bg-danger text-white' : 'bg-white text-ink'} ${className}`}
+    >
+      {tag}
+    </span>
   )
 }
