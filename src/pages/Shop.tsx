@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { ProductCard } from '../components/ProductCard'
 import { SiteHeader } from '../components/SiteHeader'
-import { Empty, ErrorBox, Loading } from '../components/States'
+import { ProductGridSkeleton } from '../components/Skeletons'
+import { Empty, ErrorBox } from '../components/States'
 import { fetchCategories, fetchProducts, fetchSettings } from '../data/catalog'
 import { totalStock } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
@@ -33,16 +34,20 @@ export function Shop() {
       <div className="mx-auto max-w-6xl px-5 pb-16">
         <section className="mt-4 flex flex-col gap-2 rounded-2xl bg-ink px-5 py-6 text-white md:flex-row md:items-end md:justify-between md:px-8 md:py-9">
           <h1 className="m-0 font-display text-[28px] font-black leading-[1.02] md:text-5xl">
-            FRESH PICKS.
+            <Words text="FRESH PICKS." />
             <br />
-            LOCAL PRICES.
+            <Words text="LOCAL PRICES." from={2} />
           </h1>
           <p className="m-0 max-w-xs text-sm leading-relaxed text-[#d9d9d4] md:text-base">
             Book online. Pay cash or UPI at pickup or delivery.
           </p>
         </section>
 
-        {catalog.loading && <Loading label="Loading clothes" />}
+        {catalog.loading && (
+          <div className="mt-5 md:mt-8">
+            <ProductGridSkeleton />
+          </div>
+        )}
         {catalog.error && <ErrorBox message={catalog.error} onRetry={catalog.reload} />}
 
         {!catalog.loading && !catalog.error && (
@@ -78,8 +83,8 @@ export function Shop() {
                 <Empty>Nothing here right now. New stock arrives every week.</Empty>
               ) : (
                 <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
-                  {shown.map((p) => (
-                    <ProductCard key={p.id} product={p} />
+                  {shown.map((p, i) => (
+                    <ProductCard key={p.id} product={p} index={i} />
                   ))}
                 </div>
               )}
@@ -88,5 +93,19 @@ export function Shop() {
         )}
       </div>
     </div>
+  )
+}
+
+/** Splits a headline into words that slide up one after another. */
+function Words({ text, from = 0 }: { text: string; from?: number }) {
+  return (
+    <span aria-label={text}>
+      {text.split(' ').map((w, i) => (
+        <span key={i} aria-hidden="true" className="word" style={{ '--i': from + i } as CSSProperties}>
+          {w}
+          {'\u00a0'}
+        </span>
+      ))}
+    </span>
   )
 }

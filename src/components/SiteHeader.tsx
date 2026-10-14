@@ -46,11 +46,12 @@ export function CartButton({ count, className = '' }: { count: number; className
     <Link
       to="/cart"
       aria-label={count ? `Cart, ${count} ${count === 1 ? 'item' : 'items'}` : 'Cart'}
+      data-cart-target
       className={`relative flex size-11 items-center justify-center rounded-full hover:bg-surface ${className}`}
     >
       <BagIcon size={22} />
       {count > 0 && (
-        <span className="absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-black text-ink">
+        <span key={count} className="pop absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-black text-ink">
           {count}
         </span>
       )}

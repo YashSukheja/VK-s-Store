@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Link, Navigate, RouterProvider } from 'react-router'
 import './index.css'
+import { PageTransition } from './components/PageTransition'
 import { Loading } from './components/States'
 import { AuthProvider } from './lib/auth'
 import { CartProvider } from './lib/cart'
@@ -24,13 +25,18 @@ function NotFound() {
 }
 
 const router = createBrowserRouter([
-  { path: '/', element: <Shop /> },
-  { path: '/p/:id', element: <ProductPage /> },
-  { path: '/cart', element: <Cart /> },
-  { path: '/login', element: <Login mode="login" /> },
-  { path: '/register', element: <Login mode="register" /> },
-  { path: '/account', element: <Account /> },
-  { path: '/bookings/:code', element: <BookingDetail /> },
+  {
+    element: <PageTransition />,
+    children: [
+      { path: '/', element: <Shop /> },
+      { path: '/p/:id', element: <ProductPage /> },
+      { path: '/cart', element: <Cart /> },
+      { path: '/login', element: <Login mode="login" /> },
+      { path: '/register', element: <Login mode="register" /> },
+      { path: '/account', element: <Account /> },
+      { path: '/bookings/:code', element: <BookingDetail /> },
+    ],
+  },
   // Admin pages load separately so shoppers' phones download less.
   { path: '/admin/login', hydrateFallbackElement: <Loading />, lazy: async () => ({ Component: (await import('./pages/admin/AdminLogin')).AdminLogin }) },
   {

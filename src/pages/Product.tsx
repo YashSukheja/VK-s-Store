@@ -1,13 +1,15 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { BackIcon, CheckIcon, ChatIcon, InfoIcon } from '../components/Icons'
 import { Photo } from '../components/Photo'
 import { CartButton, SiteHeader } from '../components/SiteHeader'
-import { ErrorBox, Loading } from '../components/States'
+import { ProductPageSkeleton } from '../components/Skeletons'
+import { ErrorBox } from '../components/States'
 import { fetchCategories, fetchProduct, fetchSettings } from '../data/catalog'
 import { discountPercent, formatPrice, LOW_STOCK, sortedImages, sortedSizes, whatsappLink } from '../lib/format'
 import { MAX_QTY, useCart } from '../lib/cart'
 import { imageUrl } from '../lib/supabase'
+import { flyToCart } from '../lib/flyToCart'
 import { useAsync } from '../lib/useAsync'
 import { useTitle } from '../lib/useTitle'
 
@@ -20,12 +22,13 @@ export function ProductPage() {
   const [photoIndex, setPhotoIndex] = useState(0)
   const [added, setAdded] = useState<string | null>(null)
   const cart = useCart()
+  const galleryRef = useRef<HTMLDivElement>(null)
   useTitle(product.data?.[0]?.name)
 
   if (product.loading) {
     return (
       <Shell settings={settings.data}>
-        <Loading />
+        <ProductPageSkeleton />
       </Shell>
     )
   }
@@ -68,6 +71,7 @@ export function ProductPage() {
 
   function addToCart() {
     if (!current || !canAdd) return
+    flyToCart(galleryRef.current?.children[photoIndex] ?? galleryRef.current)
     cart.add({ productId: p!.id, size: current.size, quantity })
     setAdded(`${quantity} × size ${current.size}`)
     setQty(1)
@@ -80,6 +84,7 @@ export function ProductPage() {
         <div className="-mx-5 md:mx-0">
           <div className="relative">
             <div
+              ref={galleryRef}
               className="no-scrollbar flex aspect-[4/5] snap-x snap-mandatory overflow-x-auto bg-photo md:rounded-2xl"
               onScroll={(e) => {
                 const el = e.currentTarget

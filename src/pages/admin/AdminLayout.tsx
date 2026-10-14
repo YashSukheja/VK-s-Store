@@ -41,7 +41,7 @@ export function AdminLayout() {
             >
               {t.label}
               {t.to === '/admin/bookings' && waiting > 0 && (
-                <span aria-label={`${waiting} waiting`} className="ml-1.5 rounded-full bg-accent px-1.5 text-xs font-black text-ink">
+                <span aria-label={`${waiting} waiting`} className="pulse ml-1.5 rounded-full bg-accent px-1.5 text-xs font-black text-ink">
                   {waiting}
                 </span>
               )}

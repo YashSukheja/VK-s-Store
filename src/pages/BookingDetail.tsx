@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
+import { Confetti } from '../components/Confetti'
 import { CheckIcon, ChatIcon } from '../components/Icons'
 import { Page } from '../components/Page'
 import { StatusPill } from '../components/StatusPill'
@@ -59,8 +60,9 @@ export function BookingDetail() {
 
   return (
     <Page title={isNew ? 'Booked!' : `Booking ${b.code}`}>
+      {isNew && <Confetti />}
       {isNew && (
-        <div className="flex flex-col gap-3 rounded-2xl bg-ink p-5 text-white">
+        <div className="rise flex flex-col gap-3 rounded-2xl bg-ink p-5 text-white">
           <span className="flex size-10 items-center justify-center rounded-full bg-accent text-ink">
             <CheckIcon size={22} />
           </span>
