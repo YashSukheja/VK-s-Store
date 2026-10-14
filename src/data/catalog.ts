@@ -33,6 +33,6 @@ export async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
 
 export async function fetchSettings(): Promise<StoreSettings> {
   return unwrap(
-    await supabase.from('store_settings').select('whatsapp_number, upi_id, pickup_address').eq('id', 1).single(),
+    await supabase.from('store_settings').select('*').eq('id', 1).single(),
   )
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useAsync } from '../lib/useAsync'
 import { useTitle } from '../lib/useTitle'
 import { fetchSettings } from '../data/catalog'
+import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
 
 /** Shop header plus a narrow column, for cart, login and booking pages. */
@@ -15,6 +16,7 @@ export function Page({ title, children }: { title: string; children: ReactNode }
         <h1 className="m-0 font-display text-[28px] font-black uppercase leading-none">{title}</h1>
         {children}
       </main>
+      <SiteFooter settings={settings.data} />
     </div>
   )
 }

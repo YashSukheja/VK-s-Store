@@ -39,6 +39,9 @@ export type StoreSettings = {
   whatsapp_number: string | null
   upi_id: string | null
   pickup_address: string | null
+  /** These two are missing until setup file 6 has been run. */
+  instagram?: string | null
+  store_hours?: string | null
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'rejected' | 'cancelled'

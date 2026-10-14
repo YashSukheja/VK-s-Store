@@ -2,6 +2,7 @@ import { useMemo, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CloseIcon, SearchIcon } from '../components/Icons'
 import { ProductCard } from '../components/ProductCard'
+import { SiteFooter } from '../components/SiteFooter'
 import { SiteHeader } from '../components/SiteHeader'
 import { ProductGridSkeleton } from '../components/Skeletons'
 import { Empty, ErrorBox } from '../components/States'
@@ -227,6 +228,7 @@ export function Shop() {
           </div>
         )}
       </div>
+      <SiteFooter settings={settings.data} />
     </div>
   )
 }

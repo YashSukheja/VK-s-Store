@@ -2,7 +2,9 @@ import { useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { BackIcon, CheckIcon, ChatIcon, InfoIcon, ShareIcon } from '../components/Icons'
 import { Photo } from '../components/Photo'
+import { RestockRequest } from '../components/RestockRequest'
 import { CartButton, SiteHeader } from '../components/SiteHeader'
+import { SiteFooter } from '../components/SiteFooter'
 import { ProductPageSkeleton } from '../components/Skeletons'
 import { ErrorBox } from '../components/States'
 import { fetchCategories, fetchProduct, fetchSettings } from '../data/catalog'
@@ -208,6 +210,8 @@ export function ProductPage() {
             )}
           </section>
 
+          <RestockRequest productId={p.id} soldOut={sizes.filter((s) => s.stock === 0).map((s) => s.size)} />
+
           {!soldOut && canAdd && (
             <div className="flex items-center justify-between">
               <h2 className="m-0 text-[15px] font-extrabold">Quantity</h2>
@@ -324,6 +328,7 @@ function Shell({ children, settings }: { children: ReactNode; settings?: Paramet
         <SiteHeader settings={settings} />
       </div>
       <main className="mx-auto max-w-6xl px-5">{children}</main>
+      <SiteFooter settings={settings} roomForBar />
     </div>
   )
 }

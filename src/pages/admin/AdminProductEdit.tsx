@@ -9,6 +9,7 @@ import { compressPhoto, makeThumbnail, thumbPath } from '../../lib/images'
 import { IMAGE_BUCKET, imageUrl, supabase } from '../../lib/supabase'
 import type { Category, Product } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
+import { WaitingCustomers } from './WaitingCustomers'
 
 const MAX_PHOTOS = 8
 
@@ -282,6 +283,8 @@ function Editor({ categories, product, justSaved }: { categories: Category[]; pr
           </ul>
         )}
       </Card>
+
+      {product && <WaitingCustomers productId={product.id} productName={product.name} />}
 
       <Card>
         <Toggle label="Show in shop" checked={visible} onChange={setVisible} />

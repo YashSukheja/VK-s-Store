@@ -168,3 +168,44 @@ test('only the admin can change stock quickly or set the SALE tag; stock never g
   assert.ifError((await boss.from('products').update({ on_sale: true }).eq('id', p.id)).error)
   assert.equal(await peek(), true)
 })
+
+test('customers ask to be told when a sold-out size is back; only they and the admin see it', async () => {
+  const p = await product(0)
+  const svc = service()
+  await svc.from('product_sizes').insert({ product_id: p.id, size: '34', stock: 2 })
+  const a = await customer()
+  const b = await customer()
+  const ask = (c, size) => c.rpc('request_restock', { p_product_id: p.id, p_size: size })
+
+  assert.ifError((await ask(a.c, '32')).error)
+  assert.ifError((await ask(a.c, '32')).error, 'asking twice is fine')
+  assert.match((await ask(a.c, '34')).error.message, /in stock or no longer/)
+  assert.ok((await ask(client(), '32')).error, 'visitors must log in')
+  assert.match((await ask(boss, '32')).error.message, /customer account/)
+
+  const { data: own } = await a.c.from('stock_requests').select('id, size')
+  assert.deepEqual(own.map((r) => r.size), ['32'])
+  assert.equal((await b.c.from('stock_requests').select('id')).data.length, 0, 'others cannot see it')
+  await a.c.from('stock_requests').update({ notified_at: new Date().toISOString() }).eq('id', own[0].id)
+  await b.c.from('stock_requests').delete().eq('id', own[0].id)
+
+  const { data: seen } = await boss.from('stock_requests').select('id, size, notified_at, customer:profiles(username)').eq('product_id', p.id)
+  assert.equal(seen.length, 1)
+  assert.equal(seen[0].notified_at, null, 'customers cannot mark themselves as told')
+  assert.match(seen[0].customer.username, /^ab\d+_/)
+  assert.ifError((await boss.from('stock_requests').update({ notified_at: new Date().toISOString() }).eq('id', seen[0].id)).error)
+
+  // Asking again after being told re-opens it; the customer can withdraw it.
+  assert.ifError((await ask(a.c, '32')).error)
+  assert.equal((await boss.from('stock_requests').select('notified_at').eq('id', seen[0].id).single()).data.notified_at, null)
+  assert.ifError((await a.c.from('stock_requests').delete().eq('product_id', p.id)).error)
+  assert.equal((await boss.from('stock_requests').select('id').eq('product_id', p.id)).data.length, 0)
+
+  // Footer settings are public to read, admin-only to write.
+  assert.ifError((await boss.from('store_settings').update({ instagram: 'vks.store', store_hours: '11 to 9' }).eq('id', 1)).error)
+  assert.equal((await client().from('store_settings').select('instagram').single()).data.instagram, 'vks.store')
+  await a.c.from('store_settings').update({ instagram: 'hacked' }).eq('id', 1)
+  assert.equal((await client().from('store_settings').select('instagram').single()).data.instagram, 'vks.store')
+  assert.ok((await boss.from('store_settings').update({ instagram: 'bad name!' }).eq('id', 1)).error)
+  await boss.from('store_settings').update({ instagram: null, store_hours: null }).eq('id', 1)
+})

@@ -86,7 +86,11 @@ const BACKUP_TABLES = [
   'profiles',
   'bookings',
   'booking_items',
+  'stock_requests',
 ] as const
+
+/** Tables added by later setup files: skipped if that file hasn't been run yet. */
+const OPTIONAL_TABLES: readonly string[] = ['stock_requests']
 
 /** Everything in the database (except logins and passwords), as one JSON file. */
 export async function downloadBackup(): Promise<{ rows: number }> {
@@ -97,6 +101,7 @@ export async function downloadBackup(): Promise<{ rows: number }> {
     // Page through in chunks so big tables come back whole.
     for (let from = 0; ; from += 1000) {
       const { data, error } = await supabase.from(table).select('*').range(from, from + 999)
+      if (error && OPTIONAL_TABLES.includes(table)) break
       if (error) throw new Error(`${table}: ${error.message}`)
       all.push(...data)
       if (data.length < 1000) break

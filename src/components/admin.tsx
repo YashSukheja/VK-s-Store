@@ -5,7 +5,7 @@ export const fieldClass =
 
 export function Card({ title, children, aside }: { title?: string; children: ReactNode; aside?: ReactNode }) {
   return (
-    <section className="flex flex-col gap-3 rounded-2xl bg-white p-4">
+    <section aria-label={title} className="flex flex-col gap-3 rounded-2xl bg-white p-4">
       {(title || aside) && (
         <div className="flex items-baseline justify-between gap-3">
           {title && <h2 className="m-0 text-xs font-extrabold uppercase tracking-[0.08em] text-muted">{title}</h2>}

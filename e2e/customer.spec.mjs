@@ -30,7 +30,7 @@ test('a shopper fills the cart, creates an account and books', async ({ page }) 
   await page.getByRole('link', { name: 'Cart, 3 items' }).click()
   await expect(page.getByRole('heading', { name: 'Your cart' })).toBeVisible()
   await expect(page.getByText('₹1,897')).toBeVisible()
-  await expect(page.getByText('Shop 4, Main Market')).toBeVisible()
+  await expect(page.getByRole('main').getByText('Shop 4, Main Market')).toBeVisible()
   await page.getByRole('link', { name: 'Log in to book' }).click()
 
   await page.getByRole('link', { name: 'Create an account' }).click()

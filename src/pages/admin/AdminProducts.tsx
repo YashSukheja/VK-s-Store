@@ -5,6 +5,7 @@ import { PlusIcon } from '../../components/Icons'
 import { Photo } from '../../components/Photo'
 import { Empty, ErrorBox, Loading } from '../../components/States'
 import { adjustStock } from '../../data/admin'
+import { fetchOpenRequestCounts } from '../../data/restock'
 import { fetchCategories, fetchProducts } from '../../data/catalog'
 import { formatPrice, sortedSizes, sortedImages, totalStock } from '../../lib/format'
 import type { Product, ProductSize } from '../../lib/types'
@@ -12,11 +13,11 @@ import { imageUrl, thumbUrl } from '../../lib/supabase'
 import { useAsync } from '../../lib/useAsync'
 
 export function AdminProducts() {
-  const { data, error, loading, reload } = useAsync(() => Promise.all([fetchCategories(), fetchProducts()]), [])
+  const { data, error, loading, reload } = useAsync(() => Promise.all([fetchCategories(), fetchProducts(), fetchOpenRequestCounts()]), [])
   const [query, setQuery] = useState('')
   const [categoryId, setCategoryId] = useState('')
 
-  const [categories, products] = data ?? [[], []]
+  const [categories, products, waiting] = data ?? [[], [], new Map<string, number>()]
   const names = useMemo(() => new Map(categories.map((c) => [c.id, c.name])), [categories])
   const shown = products.filter(
     (p) => (!categoryId || p.category_id === categoryId) && p.name.toLowerCase().includes(query.trim().toLowerCase()),
@@ -52,14 +53,14 @@ export function AdminProducts() {
 
       <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
         {shown.map((p) => (
-          <ProductRow key={p.id} product={p} categoryName={names.get(p.category_id) ?? 'No category'} />
+          <ProductRow key={p.id} product={p} categoryName={names.get(p.category_id) ?? 'No category'} waiting={waiting.get(p.id) ?? 0} />
         ))}
       </ul>
     </div>
   )
 }
 
-function ProductRow({ product: p, categoryName }: { product: Product; categoryName: string }) {
+function ProductRow({ product: p, categoryName, waiting }: { product: Product; categoryName: string; waiting: number }) {
   // Sizes live here so the quick +/- buttons and the stock count stay in step.
   const [sizes, setSizes] = useState(() => sortedSizes(p))
   const cover = sortedImages(p)[0]
@@ -77,6 +78,7 @@ function ProductRow({ product: p, categoryName }: { product: Product; categoryNa
             <span className={`rounded-md px-1.5 py-0.5 font-bold ${stock === 0 ? 'bg-[#ececE7] text-[#45453f]' : 'bg-surface'}`}>
               {stock === 0 ? 'Sold out' : `${stock} in stock`}
             </span>
+            {waiting > 0 && <span className="rounded-md bg-accent px-1.5 py-0.5 font-bold text-ink">{waiting} waiting</span>}
             {p.on_sale && <span className="rounded-md bg-danger px-1.5 py-0.5 font-bold text-white">Sale</span>}
             {!p.is_visible && <span className="rounded-md bg-warn-bg px-1.5 py-0.5 font-bold text-warn-ink">Hidden</span>}
           </span>
