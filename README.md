@@ -45,11 +45,7 @@ npm run test:e2e   # resets the local database, then browser tests: admin setup,
    where id = (select id from auth.users where email = 'VK_EMAIL_HERE');
    ```
    On first login at `/admin`, VK scans a QR code with Google Authenticator.
-4. **Cloudflare Pages**: create a project from this GitHub repo.
-   - Build command: `npm run build`
-   - Output folder: `dist`
-   - Environment variables: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (Supabase > Project Settings > API).
-   `public/_redirects` sends every page to the app so links like `/p/...` work.
+4. **Cloudflare**: Workers & Pages > Create > import this GitHub repo (deploy command `npx wrangler deploy`). `wrangler.jsonc` builds the site and serves `dist/`; its `name` must match the Worker's name. The public Supabase URL and publishable key are in `.env.production`.
 
 ## Project layout
 

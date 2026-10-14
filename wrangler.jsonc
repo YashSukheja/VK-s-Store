@@ -1,0 +1,12 @@
+// Cloudflare Workers deploy: serves the built site from dist/.
+// The name must match the Worker in the Cloudflare dashboard.
+{
+  "name": "vk-s-store",
+  "compatibility_date": "2026-10-01",
+  "build": { "command": "npm run build" },
+  "assets": {
+    "directory": "./dist",
+    // Links like /p/... and /admin load the app instead of a 404.
+    "not_found_handling": "single-page-application"
+  }
+}
