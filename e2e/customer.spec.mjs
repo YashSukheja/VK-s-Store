@@ -46,7 +46,13 @@ test('a shopper fills the cart, creates an account and books', async ({ page }) 
 
   // Back in the cart, logged in.
   await expect(page).toHaveURL(/\/cart$/)
+  const prices = page.getByRole('region', { name: 'Price details · 3 pieces' })
+  await expect(prices.getByText('Total MRP')).toBeVisible()
+  await expect(prices.getByText(/^You save ₹[\d,]+ \(\d+% off\) on this booking$/)).toBeVisible()
+  await expect(prices.getByText('Free')).toBeVisible()
+  if (shots) await prices.screenshot({ path: `${shots}/cart-prices.png` })
   await page.getByLabel('Delivery').check()
+  await expect(prices.getByText('Confirmed by the store')).toBeVisible()
   await page.getByRole('button', { name: 'Book now · ₹1,897' }).click()
   await expect(page.getByText('Add your delivery address.')).toBeVisible()
   await page.getByLabel('Delivery address').fill('21 Lake View, Sector 9')

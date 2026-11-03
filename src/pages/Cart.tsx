@@ -91,6 +91,9 @@ export function Cart() {
     return { ...l, product, stock, problem }
   })
   const total = rows.reduce((sum, r) => sum + (r.product ? r.product.price * r.quantity : 0), 0)
+  const mrpTotal = rows.reduce((sum, r) => sum + (r.product ? Math.max(r.product.mrp ?? 0, r.product.price) * r.quantity : 0), 0)
+  const saved = mrpTotal - total
+  const pieces = rows.reduce((sum, r) => sum + (r.product ? r.quantity : 0), 0)
   const hasProblem = rows.some((r) => r.problem)
   const pickupAddress = settings.data?.pickup_address
   const upiId = settings.data?.upi_id
@@ -168,10 +171,34 @@ export function Cart() {
         })}
       </ul>
 
-      <div className="flex items-baseline justify-between">
-        <span className="text-sm font-bold">Total</span>
-        <span className="font-display text-2xl font-black">{formatPrice(total)}</span>
-      </div>
+      <section aria-labelledby="price-details" className="flex flex-col gap-2 border-[1.5px] border-line p-4">
+        <h2 id="price-details" className="m-0 text-[15px] font-extrabold">
+          Price details · {pieces} {pieces === 1 ? 'piece' : 'pieces'}
+        </h2>
+        <div className="flex justify-between text-sm">
+          <span className="text-body">Total MRP</span>
+          <span>{formatPrice(mrpTotal)}</span>
+        </div>
+        {saved > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-body">Discount on MRP</span>
+            <span className="font-bold">− {formatPrice(saved)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-sm">
+          <span className="text-body">{fulfilment === 'pickup' ? 'Pickup' : 'Delivery'}</span>
+          <span className={fulfilment === 'pickup' ? 'font-bold' : 'text-muted'}>{fulfilment === 'pickup' ? 'Free' : 'Confirmed by the store'}</span>
+        </div>
+        <div className="mt-1 flex items-baseline justify-between border-t border-line pt-3">
+          <span className="text-sm font-extrabold">Total</span>
+          <span className="font-display text-2xl font-black">{formatPrice(total)}</span>
+        </div>
+        {saved > 0 && (
+          <p className="m-0 bg-ink px-3 py-2 text-center text-sm font-extrabold text-white">
+            You save {formatPrice(saved)} ({Math.round((saved / mrpTotal) * 100)}% off) on this booking
+          </p>
+        )}
+      </section>
 
       <Section title="How do you want it?">
         <Choice name="fulfilment" checked={fulfilment === 'pickup'} onChange={() => setFulfilment('pickup')} label="Pickup from the shop">
