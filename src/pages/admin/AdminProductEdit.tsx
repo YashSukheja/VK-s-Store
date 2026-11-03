@@ -6,7 +6,7 @@ import { ErrorBox, Loading } from '../../components/States'
 import { fetchCategories, fetchProduct } from '../../data/catalog'
 import { sortedImages, sortedSizes } from '../../lib/format'
 import { compressPhoto, makeThumbnail, thumbPath } from '../../lib/images'
-import { IMAGE_BUCKET, imageUrl, supabase } from '../../lib/supabase'
+import { IMAGE_BUCKET, imageUrl, PHOTO_CACHE, supabase } from '../../lib/supabase'
 import { MEASURES } from '../../lib/measurements'
 import type { Category, MeasureKey, Measurements, Product } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
@@ -227,10 +227,10 @@ function Editor({
           continue
         }
         const path = `${productId}/${crypto.randomUUID()}.webp`
-        const { error: upError } = await supabase.storage.from(IMAGE_BUCKET).upload(path, photo.file, { contentType: 'image/webp' })
+        const { error: upError } = await supabase.storage.from(IMAGE_BUCKET).upload(path, photo.file, { contentType: 'image/webp', cacheControl: PHOTO_CACHE })
         if (upError) throw new Error(`Photo upload failed: ${upError.message}`)
         // The small copy is a nice-to-have: the shop falls back to the big photo without it.
-        await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), photo.thumb, { contentType: 'image/webp' })
+        await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), photo.thumb, { contentType: 'image/webp', cacheControl: PHOTO_CACHE })
         const row = { product_id: productId, path, sort_order: index, ...(photo.real ? { is_real: true } : {}) }
         const { error: rowError } = await supabase.from('product_images').insert(row)
         if (rowError) throw new Error(setupMessage(rowError.message))

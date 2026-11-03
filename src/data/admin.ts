@@ -1,5 +1,5 @@
 import { makeThumbnail, thumbPath } from '../lib/images'
-import { IMAGE_BUCKET, imageUrl, supabase, thumbUrl } from '../lib/supabase'
+import { IMAGE_BUCKET, imageUrl, PHOTO_CACHE, supabase, thumbUrl } from '../lib/supabase'
 import type { Booking, BookingStatus, Customer, ProductSize } from '../lib/types'
 import { BOOKING_COLUMNS } from './bookings'
 
@@ -139,7 +139,7 @@ export async function makeThumbnailFor(path: string): Promise<void> {
   const res = await fetch(imageUrl(path), { cache: 'no-store' })
   if (!res.ok) throw new Error(`Couldn't download ${path}`)
   const thumb = await makeThumbnail(await res.blob())
-  const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp' })
+  const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp', cacheControl: PHOTO_CACHE })
   if (error) throw new Error(error.message)
 }
 
@@ -250,9 +250,9 @@ async function addDemoPhotos(productId: string, set: string, demo: ReturnType<ty
   for (const [order, side] of views.entries()) {
     const { big, small } = await demo(`${set}-${side}`)
     const path = `${productId}/${crypto.randomUUID()}.webp`
-    const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(path, big, { contentType: 'image/webp' })
+    const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(path, big, { contentType: 'image/webp', cacheControl: PHOTO_CACHE })
     if (error) throw new Error(`Photo upload failed: ${error.message}`)
-    await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), small, { contentType: 'image/webp' })
+    await supabase.storage.from(IMAGE_BUCKET).upload(thumbPath(path), small, { contentType: 'image/webp', cacheControl: PHOTO_CACHE })
     unwrap(await supabase.from('product_images').insert({ product_id: productId, path, sort_order: order }))
   }
 }
