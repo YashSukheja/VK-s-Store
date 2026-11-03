@@ -46,8 +46,9 @@ export function Cart() {
 
   /** Saves the piece to the wishlist (if it isn't already) and takes it out of the cart. */
   async function moveToWishlist(productId: string, size: string) {
-    if (!wishlist.ids.has(productId)) await wishlist.toggle(productId)
-    showToast('Moved to your wishlist', { to: '/wishlist', label: 'View' })
+    const already = wishlist.ids.has(productId)
+    if (!already) await wishlist.toggle(productId)
+    showToast(already ? 'Already in your wishlist · removed from cart' : 'Moved to your wishlist', { to: '/wishlist', label: 'View' })
     removeLine(productId, size)
   }
 
@@ -216,14 +217,37 @@ export function Cart() {
                 </div>
                 {r.problem && <span className="text-xs font-bold text-danger">{r.problem}</span>}
                 {r.product && (
-                  <button
-                    type="button"
-                    onClick={() => moveToWishlist(r.productId, r.size)}
-                    className="-ml-1 flex min-h-9 items-center gap-1.5 self-start px-1 text-[13px] font-extrabold underline underline-offset-4"
-                  >
-                    <HeartIcon size={15} filled={wishlist.ids.has(r.productId)} />
-                    {wishlist.ids.has(r.productId) ? 'In wishlist · remove from cart' : 'Move to wishlist'}
-                  </button>
+                  <div className="-ml-1 flex flex-wrap items-center gap-x-4">
+                    <button
+                      type="button"
+                      onClick={() => moveToWishlist(r.productId, r.size)}
+                      className="flex min-h-9 items-center gap-1.5 px-1 text-[13px] font-extrabold underline underline-offset-4"
+                    >
+                      <HeartIcon size={15} />
+                      Move to wishlist
+                    </button>
+                    {(() => {
+                      // The first size with stock that isn't in the cart yet.
+                      const product = r.product
+                      const next = sortedSizes(product).find(
+                        (s) => s.stock > 0 && !cart.lines.some((l) => l.productId === r.productId && l.size === s.size),
+                      )
+                      return (
+                        next && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              cart.add({ productId: r.productId, size: next.size, quantity: 1 })
+                              showToast(`Added size ${next.size}. Change it in the new row.`)
+                            }}
+                            className="flex min-h-9 items-center px-1 text-[13px] font-extrabold underline underline-offset-4"
+                          >
+                            + Add another size
+                          </button>
+                        )
+                      )
+                    })()}
+                  </div>
                 )}
               </div>
             </li>
