@@ -1,7 +1,11 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { fieldClass } from '../components/admin'
-import { CloseIcon } from '../components/Icons'
+import { CloseIcon, HeartIcon } from '../components/Icons'
+import { RecentlyViewed } from '../components/RecentlyViewed'
+import { SavedGrid } from '../components/SavedGrid'
+import { showToast } from '../lib/toast'
+import { useWishlist } from '../lib/wishlist'
 import { Page } from '../components/Page'
 import { Photo } from '../components/Photo'
 import { Empty, ErrorBox, Loading } from '../components/States'
@@ -9,7 +13,7 @@ import { placeBooking } from '../data/bookings'
 import { fetchProductsByIds, fetchSettings } from '../data/catalog'
 import { useAuth } from '../lib/auth'
 import { MAX_QTY, useCart } from '../lib/cart'
-import { formatPrice, sortedImages } from '../lib/format'
+import { formatPrice, LOW_STOCK, sortedImages, sortedSizes } from '../lib/format'
 import { imageUrl, thumbUrl } from '../lib/supabase'
 import type { Product } from '../lib/types'
 import { useAsync } from '../lib/useAsync'
@@ -25,6 +29,7 @@ type Row = {
 
 export function Cart() {
   const cart = useCart()
+  const wishlist = useWishlist()
   const { session, role } = useAuth()
   const navigate = useNavigate()
   const ids = [...new Set(cart.lines.map((l) => l.productId))]
@@ -38,6 +43,13 @@ export function Cart() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [leaving, setLeaving] = useState<Set<string>>(new Set())
+
+  /** Saves the piece to the wishlist (if it isn't already) and takes it out of the cart. */
+  async function moveToWishlist(productId: string, size: string) {
+    if (!wishlist.ids.has(productId)) await wishlist.toggle(productId)
+    showToast('Moved to your wishlist', { to: '/wishlist', label: 'View' })
+    removeLine(productId, size)
+  }
 
   /** Slides a line out, then removes it. */
   function removeLine(productId: string, size: string) {
@@ -63,6 +75,15 @@ export function Cart() {
             Browse the shop
           </Link>
         </Empty>
+        {wishlist.order.length > 0 && (
+          <section aria-labelledby="from-wishlist" className="flex flex-col gap-3 pt-4">
+            <h2 id="from-wishlist" className="m-0 font-display text-2xl font-black uppercase">
+              From your wishlist
+            </h2>
+            <SavedGrid />
+          </section>
+        )}
+        <RecentlyViewed className="pt-4" />
       </Page>
     )
   }
@@ -136,9 +157,38 @@ export function Cart() {
                     <CloseIcon size={18} />
                   </button>
                 </div>
-                <span className="text-[13px] text-muted">
-                  {r.product?.colour && <>{r.product.colour} · </>}Size {r.size}
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+                  {r.product && sortedSizes(r.product).filter((s) => s.stock > 0 || s.size === r.size).length > 1 ? (
+                    <label className="flex items-center gap-1.5">
+                      {r.product.colour && <>{r.product.colour} · </>}Size
+                      <select
+                        aria-label={`Size of ${r.product.name}`}
+                        value={r.size}
+                        onChange={(e) => {
+                          const to = e.target.value
+                          const stock = r.product?.product_sizes.find((s) => s.size === to)?.stock ?? 1
+                          cart.changeSize(r.productId, r.size, to, stock)
+                        }}
+                        className="h-8 border-[1.5px] border-field bg-white px-1.5 text-[13px] font-extrabold text-ink"
+                      >
+                        {sortedSizes(r.product)
+                          .filter((s) => s.stock > 0 || s.size === r.size)
+                          .map((s) => (
+                            <option key={s.size} value={s.size}>
+                              {s.size}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                  ) : (
+                    <span>
+                      {r.product?.colour && <>{r.product.colour} · </>}Size {r.size}
+                    </span>
+                  )}
                 </span>
+                {r.product && !r.problem && r.stock > 0 && r.stock <= LOW_STOCK && (
+                  <span className="text-xs font-extrabold text-ink">Only {r.stock} left in size {r.size} · book soon</span>
+                )}
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex items-center rounded-none border-[1.5px] border-field">
                     <button
@@ -165,6 +215,16 @@ export function Cart() {
                   {r.product && <span className="font-display text-base font-extrabold">{formatPrice(r.product.price * r.quantity)}</span>}
                 </div>
                 {r.problem && <span className="text-xs font-bold text-danger">{r.problem}</span>}
+                {r.product && (
+                  <button
+                    type="button"
+                    onClick={() => moveToWishlist(r.productId, r.size)}
+                    className="-ml-1 flex min-h-9 items-center gap-1.5 self-start px-1 text-[13px] font-extrabold underline underline-offset-4"
+                  >
+                    <HeartIcon size={15} filled={wishlist.ids.has(r.productId)} />
+                    {wishlist.ids.has(r.productId) ? 'In wishlist · remove from cart' : 'Move to wishlist'}
+                  </button>
+                )}
               </div>
             </li>
           )

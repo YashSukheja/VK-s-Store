@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { Confetti } from '../components/Confetti'
 import { ChatIcon } from '../components/Icons'
@@ -17,6 +18,22 @@ export function BookingDetail() {
   const { session, loading: authLoading } = useAuth()
   const booking = useAsync(() => fetchBooking(code), [code, session?.user.id])
   const settings = useAsync(fetchSettings, [])
+  const sentKey = `vrack-wa-sent-${code}`
+  const [sent, setSent] = useState(() => {
+    try {
+      return localStorage.getItem(sentKey) === '1'
+    } catch {
+      return false
+    }
+  })
+  function markSent() {
+    setSent(true)
+    try {
+      localStorage.setItem(sentKey, '1')
+    } catch {
+      // Private mode: the reminder just shows again next time.
+    }
+  }
 
   if (!authLoading && !session) return <Navigate to={`/login?next=${encodeURIComponent(`/bookings/${code}`)}`} replace />
   if (authLoading || booking.loading) {
@@ -46,35 +63,72 @@ export function BookingDetail() {
   }
 
   const wa = settings.data?.whatsapp_number
-  const waButton = wa && (
+  const waHref = wa ? whatsappLink(wa, bookingMessage(b)) : undefined
+  const waButton = waHref && (
     <a
-      href={whatsappLink(wa, bookingMessage(b))}
+      href={waHref}
       target="_blank"
       rel="noreferrer"
+      onClick={markSent}
       className="flex h-[54px] items-center justify-center gap-2 rounded-none bg-ink text-base font-extrabold text-white"
     >
       <ChatIcon size={20} />
       Send to Vrack on WhatsApp
     </a>
   )
+  const waiting = b.status === 'pending'
 
   return (
-    <Page title={isNew ? 'Booked!' : `Booking ${b.code}`}>
-      {isNew && <Confetti />}
+    <Page title={isNew ? (sent ? 'Booked!' : 'One last step') : `Booking ${b.code}`}>
+      {isNew && sent && <Confetti />}
       {isNew && (
-        <div className="rise flex flex-col gap-3 rounded-2xl bg-ink p-5 text-white">
-          <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true" className="tick-draw">
-            <circle cx="24" cy="24" r="21" fill="none" stroke="#fff" strokeWidth="2.5" pathLength={1} />
-            <path d="M14 25l7 7 13-15" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" pathLength={1} />
-          </svg>
+        <div className="rise flex flex-col gap-3 bg-ink p-5 text-white">
+          {sent ? (
+            <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true" className="tick-draw">
+              <circle cx="24" cy="24" r="21" fill="none" stroke="#fff" strokeWidth="2.5" pathLength={1} />
+              <path d="M14 25l7 7 13-15" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" pathLength={1} />
+            </svg>
+          ) : (
+            <span className="flex size-12 items-center justify-center rounded-full bg-white text-ink">
+              <ChatIcon size={24} />
+            </span>
+          )}
           <p className="m-0 font-display text-2xl font-black">{b.code}</p>
-          <p className="m-0 text-sm leading-relaxed text-[#d9d9d4]">
-            Your booking is saved. Tap below to send the details to Vrack on WhatsApp so we see it straight away. We'll confirm it
-            soon.
-          </p>
+          {sent ? (
+            <p className="m-0 text-sm leading-relaxed text-[#d9d9d4]">
+              Thanks! Once your WhatsApp message reaches us, we'll check the pieces and confirm your booking. Didn't send it? Tap the button
+              again.
+            </p>
+          ) : (
+            <>
+              <p className="m-0 text-lg font-extrabold leading-snug">Send it on WhatsApp to finish your booking</p>
+              <p className="m-0 text-sm leading-relaxed text-[#d9d9d4]">
+                Vrack only starts on a booking after its WhatsApp message arrives. The message is ready with your booking code; just tap
+                Send in WhatsApp.
+              </p>
+            </>
+          )}
+          {waHref && (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noreferrer"
+              onClick={markSent}
+              className={`mt-1 flex h-[56px] items-center justify-center gap-2 bg-white text-base font-extrabold text-ink ${sent ? '' : 'wa-nudge'}`}
+            >
+              <ChatIcon size={20} />
+              {sent ? 'Open WhatsApp again' : 'Send on WhatsApp'}
+            </a>
+          )}
         </div>
       )}
-      {isNew && waButton}
+      {!isNew && waiting && !sent && waHref && (
+        <div className="flex flex-col gap-2 border-[1.5px] border-ink p-4">
+          <p className="m-0 text-sm font-extrabold">Not sent on WhatsApp yet?</p>
+          <p className="m-0 text-[13px] text-body">We only start on a booking after its WhatsApp message arrives.</p>
+          {waButton}
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted">{formatDateTime(b.created_at)}</span>
@@ -132,7 +186,7 @@ export function BookingDetail() {
         )}
       </dl>
 
-      {!isNew && waButton}
+      {!isNew && (!waiting || sent) && waButton}
       <Link to="/account" className="text-center text-sm font-extrabold underline underline-offset-4">
         All my bookings
       </Link>

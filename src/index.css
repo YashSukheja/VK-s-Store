@@ -330,3 +330,16 @@ button[aria-pressed='true']:not(.heart),
     stroke-dashoffset: 0;
   }
 }
+
+/* The WhatsApp button gently nudges until it is tapped. */
+.wa-nudge {
+  animation: wa-nudge 1.8s ease-in-out infinite;
+}
+@keyframes wa-nudge {
+  0%, 70%, 100% { transform: none; }
+  80% { transform: scale(1.03); }
+  90% { transform: scale(0.99); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wa-nudge { animation: none; }
+}

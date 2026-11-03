@@ -13,6 +13,8 @@ type CartState = {
   add: (line: CartLine) => void
   setQuantity: (productId: string, size: string, quantity: number) => void
   remove: (productId: string, size: string) => void
+  /** Moves a line to another size (merging if that size is already in the cart), up to `limit` pieces. */
+  changeSize: (productId: string, from: string, to: string, limit: number) => void
   clear: () => void
 }
 
@@ -61,11 +63,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLines((prev) => prev.filter((l) => !same(l, productId, size)))
   }, [])
 
+  const changeSize = useCallback((productId: string, from: string, to: string, limit: number) => {
+    setLines((prev) => {
+      const old = prev.find((l) => same(l, productId, from))
+      if (!old || from === to) return prev
+      const there = prev.find((l) => same(l, productId, to))
+      const quantity = Math.max(1, Math.min(old.quantity + (there?.quantity ?? 0), limit, MAX_QTY))
+      return prev.filter((l) => l !== there).map((l) => (l === old ? { ...l, size: to, quantity } : l))
+    })
+  }, [])
+
   const clear = useCallback(() => setLines([]), [])
 
   const count = lines.reduce((sum, l) => sum + l.quantity, 0)
 
-  return <CartContext.Provider value={{ lines, count, add, setQuantity, remove, clear }}>{children}</CartContext.Provider>
+  return <CartContext.Provider value={{ lines, count, add, setQuantity, remove, changeSize, clear }}>{children}</CartContext.Provider>
 }
 
 export function useCart(): CartState {
