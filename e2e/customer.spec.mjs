@@ -119,6 +119,28 @@ test('in the cart a shopper changes size, sees low stock and moves a piece to th
   await expect(page.getByRole('region', { name: 'Recently viewed' }).getByRole('link', { name: /Oxford Shirt/ })).toBeVisible()
 })
 
+test('a shopper can put two sizes of the same piece in the cart', async ({ page }) => {
+  await page.goto('/shop')
+  await page.getByRole('link', { name: /Oxford Shirt, Sky Blue/ }).click()
+  await page.getByRole('button', { name: 'L', exact: true }).click()
+  await page.getByRole('button', { name: 'Add to cart' }).click()
+  await expect(page.getByText('Want another size too? Pick it above.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'L, in your cart' })).toBeVisible()
+  await page.getByRole('button', { name: 'M', exact: true }).click()
+  await page.getByRole('button', { name: 'Add to cart' }).click()
+  await page.goto('/cart')
+  await expect(page.getByLabel('Size of Oxford Shirt')).toHaveCount(2)
+  await expect(page.getByText('Price details · 2 pieces')).toBeVisible()
+
+  // Both sizes with stock are in the cart, so there is no other size to add.
+  await expect(page.getByRole('button', { name: '+ Add another size' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Remove Oxford Shirt, Sky Blue, size M' }).click()
+  await expect(page.getByLabel('Size of Oxford Shirt')).toHaveCount(1)
+  await page.getByRole('button', { name: '+ Add another size' }).click()
+  await expect(page.getByLabel('Size of Oxford Shirt')).toHaveCount(2)
+  await expect(page.getByText('Price details · 2 pieces')).toBeVisible()
+})
+
 test('customers log in with mobile or username; wrong passwords and duplicate mobiles are refused', async ({ page }) => {
   await page.goto('/login')
   await page.getByLabel('Username or mobile number').fill(customer.mobile)

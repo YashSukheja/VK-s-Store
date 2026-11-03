@@ -92,6 +92,7 @@ export function ProductPage() {
   const wa = settings.data?.whatsapp_number
 
   const canAdd = !!current && maxQty > 0
+  const bagSizes = new Set(cart.lines.filter((l) => l.productId === p.id).map((l) => l.size))
   const measures = filledMeasures(p.measurements)
   const pairs = goesWellWith(p, all.data ?? [])
 
@@ -272,6 +273,7 @@ export function ProductPage() {
                       key={s.id}
                       type="button"
                       aria-pressed={current?.id === s.id}
+                      aria-label={bagSizes.has(s.size) ? `${s.size}, in your cart` : undefined}
                       onClick={() => {
                         setPickedSize(s.size)
                         setQty(1)
@@ -284,6 +286,9 @@ export function ProductPage() {
                       }`}
                     >
                       {s.size}
+                      {bagSizes.has(s.size) && (
+                        <span aria-hidden="true" className="ml-1 inline-block size-1.5 -translate-y-0.5 rounded-full bg-current" />
+                      )}
                     </button>
                   ),
                 )}
@@ -347,7 +352,10 @@ export function ProductPage() {
             <p role="status" className="m-0 flex items-center justify-between gap-3 rounded-xl bg-ink px-3.5 py-3 text-sm font-semibold text-white">
               <span className="flex items-center gap-2">
                 <CheckIcon size={18} className="text-white" />
-                Added {added} to your cart
+                <span>
+                  Added {added} to your cart.
+                  {sizes.filter((s) => s.stock > 0).length > 1 && <span className="font-normal"> Want another size too? Pick it above.</span>}
+                </span>
               </span>
               <Link to="/cart" className="font-extrabold text-white underline underline-offset-4">
                 View cart
