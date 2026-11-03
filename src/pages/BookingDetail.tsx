@@ -1,6 +1,6 @@
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { Confetti } from '../components/Confetti'
-import { CheckIcon, ChatIcon } from '../components/Icons'
+import { ChatIcon } from '../components/Icons'
 import { Page } from '../components/Page'
 import { StatusPill } from '../components/StatusPill'
 import { ErrorBox, Loading } from '../components/States'
@@ -63,9 +63,10 @@ export function BookingDetail() {
       {isNew && <Confetti />}
       {isNew && (
         <div className="rise flex flex-col gap-3 rounded-2xl bg-ink p-5 text-white">
-          <span className="flex size-10 items-center justify-center rounded-full bg-white text-ink">
-            <CheckIcon size={22} />
-          </span>
+          <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true" className="tick-draw">
+            <circle cx="24" cy="24" r="21" fill="none" stroke="#fff" strokeWidth="2.5" pathLength={1} />
+            <path d="M14 25l7 7 13-15" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" pathLength={1} />
+          </svg>
           <p className="m-0 font-display text-2xl font-black">{b.code}</p>
           <p className="m-0 text-sm leading-relaxed text-[#d9d9d4]">
             Your booking is saved. Tap below to send the details to Vrack on WhatsApp so we see it straight away. We'll confirm it

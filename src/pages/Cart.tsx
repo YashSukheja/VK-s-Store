@@ -37,6 +37,22 @@ export function Cart() {
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [leaving, setLeaving] = useState<Set<string>>(new Set())
+
+  /** Slides a line out, then removes it. */
+  function removeLine(productId: string, size: string) {
+    const key = `${productId}-${size}`
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return cart.remove(productId, size)
+    setLeaving((cur) => new Set(cur).add(key))
+    window.setTimeout(() => {
+      cart.remove(productId, size)
+      setLeaving((cur) => {
+        const next = new Set(cur)
+        next.delete(key)
+        return next
+      })
+    }, 280)
+  }
 
   if (cart.lines.length === 0) {
     return (
@@ -101,7 +117,7 @@ export function Cart() {
           const cover = r.product ? sortedImages(r.product)[0] : undefined
           const max = Math.max(1, Math.min(r.stock, MAX_QTY))
           return (
-            <li key={`${r.productId}-${r.size}`} className="flex gap-3 border-b border-line pb-3">
+            <li key={`${r.productId}-${r.size}`} className={`flex gap-3 border-b border-line pb-3 ${leaving.has(`${r.productId}-${r.size}`) ? 'row-out' : ''}`}>
               <Link to={`/p/${r.productId}`} className="block h-24 w-[72px] flex-none overflow-hidden rounded-lg bg-photo">
                 <Photo src={cover ? thumbUrl(cover.path) : undefined} fallbackSrc={cover ? imageUrl(cover.path) : undefined} alt={r.product?.name ?? 'Item'} />
               </Link>
@@ -111,7 +127,7 @@ export function Cart() {
                   <button
                     type="button"
                     aria-label={`Remove ${r.product?.name ?? 'item'}, size ${r.size}`}
-                    onClick={() => cart.remove(r.productId, r.size)}
+                    onClick={() => removeLine(r.productId, r.size)}
                     className="-mr-2 -mt-2 flex size-10 flex-none items-center justify-center text-muted"
                   >
                     <CloseIcon size={18} />
@@ -130,7 +146,9 @@ export function Cart() {
                     >
                       −
                     </button>
-                    <span className="min-w-6 text-center text-sm font-extrabold">{r.quantity}</span>
+                    <span className="min-w-6 overflow-hidden text-center text-sm font-extrabold">
+                      <span key={r.quantity} className="qty-roll inline-block">{r.quantity}</span>
+                    </span>
                     <button
                       type="button"
                       aria-label={`More of ${r.product?.name ?? 'item'}`}

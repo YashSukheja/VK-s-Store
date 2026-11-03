@@ -40,25 +40,52 @@ async function customerLogin(page) {
   await page.getByRole('button', { name: 'Log in' }).click()
 }
 
-test('hearts ask logged-out shoppers to log in, then save to the wishlist', async ({ page }) => {
+test('logged-out hearts are kept on the phone, then move into the account at login', async ({ page }) => {
   await page.goto('/shop')
-  await page.getByRole('button', { name: `Save ${JEANS} to wishlist` }).click()
-  await expect(page).toHaveURL(/\/login\?next=%2Fshop/)
-  await customerLogin(page)
-  await expect(page).toHaveURL(/\/shop$/)
   const heart = page.getByRole('button', { name: `Save ${JEANS} to wishlist` })
   await heart.click()
   await expect(heart).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('status').filter({ hasText: 'Saved to your wishlist' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Wishlist, 1 saved' }).first()).toBeVisible()
+
+  // The wishlist page works logged out.
+  await page.getByRole('link', { name: 'Wishlist, 1 saved' }).first().click()
+  await expect(page.getByRole('heading', { name: 'Your wishlist' })).toBeVisible()
+  await expect(page.getByRole('link', { name: new RegExp(JEANS) })).toBeVisible()
+  await expect(page.getByText('Saved on this phone.')).toBeVisible()
+
+  // Logging in moves it into the account.
+  await page.getByRole('link', { name: 'Log in', exact: true }).last().click()
+  await customerLogin(page)
+  await expect(page).toHaveURL(/\/wishlist$/)
+  await expect(page.getByRole('link', { name: new RegExp(JEANS) })).toBeVisible()
+  await expect(page.getByText('Saved on this phone.')).toHaveCount(0)
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('vrack-wishlist'))).toBeNull()
 
   await page.goto('/account?tab=wishlist')
   await expect(page.getByRole('heading', { name: 'Wishlist' })).toBeVisible()
   await expect(page.getByRole('link', { name: new RegExp(JEANS) })).toBeVisible()
   if (shots) await page.screenshot({ path: `${shots}/account-wishlist.png`, fullPage: true })
 
-  // Tapping again removes it.
+  // Tapping again removes it, also after a reload.
   await page.getByRole('button', { name: `Save ${JEANS} to wishlist` }).click()
   await page.reload()
   await expect(page.getByText('Nothing saved yet.')).toBeVisible()
+})
+
+test('recently viewed remembers the pieces a shopper opened', async ({ page }) => {
+  await page.goto('/shop')
+  await page.getByRole('link', { name: /Oxford Shirt/ }).first().click()
+  await expect(page.getByRole('heading', { level: 1, name: /Oxford Shirt/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Recently viewed' })).toHaveCount(0)
+  await page.goto('/shop')
+  await page.getByRole('link', { name: new RegExp(JEANS) }).first().click()
+  await expect(page.getByRole('heading', { level: 1, name: /Slim Jeans/ })).toBeVisible()
+  const recent = page.getByRole('region', { name: 'Recently viewed' })
+  await expect(recent.getByRole('link', { name: /Oxford Shirt/ })).toBeVisible()
+  await expect(recent.getByRole('link', { name: new RegExp(JEANS) })).toHaveCount(0)
+  await page.goto('/')
+  await expect(page.getByRole('region', { name: 'Recently viewed' }).getByRole('link', { name: new RegExp(JEANS) })).toBeVisible()
 })
 
 test('a customer who collected the shirt reviews it; others only read', async ({ page }) => {

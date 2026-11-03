@@ -1,7 +1,6 @@
+import { SavedGrid } from '../components/SavedGrid'
 import { Link, Navigate, useSearchParams } from 'react-router'
-import { ProductCard } from '../components/ProductCard'
 import { Stars } from '../components/Stars'
-import { fetchWishlist } from '../data/catalog'
 import { fetchMyReviews } from '../data/reviews'
 import { InstallApp } from '../components/InstallApp'
 import { Page } from '../components/Page'
@@ -77,7 +76,7 @@ export function Account() {
       </nav>
 
       {tab.key === 'wishlist' ? (
-        <Wishlist />
+        <SavedGrid />
       ) : tab.key === 'reviews' ? (
         <MyReviews userId={session!.user.id} />
       ) : bookings.length === 0 ? (
@@ -112,30 +111,6 @@ export function Account() {
         </ul>
       )}
     </Page>
-  )
-}
-
-function Wishlist() {
-  const list = useAsync(fetchWishlist, [])
-  if (list.loading) return <Loading />
-  if (list.error) return <ErrorBox message={list.error} onRetry={list.reload} />
-  const items = list.data ?? []
-  if (items.length === 0) {
-    return (
-      <Empty>
-        Nothing saved yet. Tap the heart on any piece to keep it here.{' '}
-        <Link to="/shop" className="font-extrabold underline underline-offset-4">
-          Browse the shop
-        </Link>
-      </Empty>
-    )
-  }
-  return (
-    <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-      {items.map((p, i) => (
-        <ProductCard key={p.id} product={p} index={i} />
-      ))}
-    </div>
   )
 }
 

@@ -1,11 +1,14 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { BackIcon, CheckIcon, ChatIcon, InfoIcon, ShareIcon } from '../components/Icons'
 import { Photo } from '../components/Photo'
 import { HeartButton } from '../components/HeartButton'
 import { RestockRequest } from '../components/RestockRequest'
 import { Reviews } from '../components/Reviews'
-import { CartButton, SiteHeader } from '../components/SiteHeader'
+import { CartButton, SiteHeader, WishButton } from '../components/SiteHeader'
+import { RecentlyViewed } from '../components/RecentlyViewed'
+import { rememberViewed } from '../lib/recent'
+import { buzz } from '../lib/toast'
 import { SiteFooter } from '../components/SiteFooter'
 import { ProductPageSkeleton } from '../components/Skeletons'
 import { ErrorBox } from '../components/States'
@@ -40,6 +43,11 @@ export function ProductPage() {
   const cart = useCart()
   const galleryRef = useRef<HTMLDivElement>(null)
   useTitle(product.data?.[0] ? displayName(product.data[0]) : undefined)
+  const shownId = product.data?.[0]?.id
+  // Remember this piece for "Recently viewed" (on this phone only).
+  useEffect(() => {
+    if (shownId) rememberViewed(shownId)
+  }, [shownId])
 
   if (product.loading) {
     return (
@@ -97,6 +105,7 @@ export function ProductPage() {
     if (!current || !canAdd) return
     flyToCart(galleryRef.current?.children[photoIndex] ?? galleryRef.current)
     cart.add({ productId: p!.id, size: current.size, quantity })
+    buzz(30)
     setAdded(`${quantity} × size ${current.size}`)
     setQty(1)
   }
@@ -138,7 +147,8 @@ export function ProductPage() {
             >
               <BackIcon />
             </button>
-            <div className="absolute right-3.5 top-3.5 bg-white md:hidden">
+            <div className="absolute right-3.5 top-3.5 flex bg-white md:hidden">
+              <WishButton />
               <CartButton count={cart.count} />
             </div>
             {images.length > 1 && (
@@ -398,7 +408,7 @@ export function ProductPage() {
         </div>
       </div>
       {pairs.length > 0 && (
-        <section aria-labelledby="pairs" className="pb-28 md:pb-6">
+        <section aria-labelledby="pairs" className="pb-12 md:pb-6">
           <h2 id="pairs" className="m-0 mb-4 font-display text-2xl font-black uppercase md:text-4xl">
             Goes well with
           </h2>
@@ -409,6 +419,7 @@ export function ProductPage() {
           </div>
         </section>
       )}
+      <RecentlyViewed key={p.id} skip={p.id} className="pb-28 md:pb-10" />
     </Shell>
   )
 }

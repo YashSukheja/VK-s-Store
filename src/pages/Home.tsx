@@ -2,6 +2,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router'
 import { DropBanner } from '../components/DropBanner'
+import { RecentlyViewed } from '../components/RecentlyViewed'
 import { HeroShow } from '../components/home/HeroShow'
 import { Intro } from '../components/home/Intro'
 import { RackRing } from '../components/home/RackRing'
@@ -116,6 +117,7 @@ export function Home() {
           </div>
         )}
       </section>
+      <RecentlyViewed className="mx-auto max-w-6xl px-5 pb-12" />
 
       <DropBanner />
 

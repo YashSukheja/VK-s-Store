@@ -136,6 +136,7 @@ export function Shop() {
                     key={l.slug || 'all'}
                     to={categoryLink(l.slug)}
                     aria-current={selected ? 'page' : undefined}
+                    data-chip
                     className={`flex h-10 flex-none items-center border-[1.5px] px-4 text-sm font-bold uppercase md:h-11 md:border-0 md:px-3 ${
                       selected ? 'border-ink bg-ink text-white' : 'border-line text-ink hover:bg-surface'
                     }`}

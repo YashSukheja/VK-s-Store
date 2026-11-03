@@ -1,4 +1,5 @@
 import { Outlet, ScrollRestoration, useLocation } from 'react-router'
+import { Toaster } from '../lib/toast'
 
 /**
  * Each new shop page fades in. Keyed on the path, so filters like ?cat= don't replay it.
@@ -12,6 +13,7 @@ export function PageTransition() {
         <Outlet />
       </div>
       <ScrollRestoration />
+      <Toaster />
     </>
   )
 }
