@@ -1,8 +1,10 @@
 import { supabase } from '../lib/supabase'
 import type { Category, Product, StoreSettings } from '../lib/types'
 
-/** The home page model cut-out, uploaded in admin Settings. */
-export const HERO_MODEL_PATH = 'site/hero-model.webp'
+/** The home page photo of clothes on a rail, uploaded in admin Settings. */
+export const HERO_PHOTO_PATH = 'site/hero-photo.webp'
+/** Built-in home page photo, used until one is uploaded in admin. */
+export const DEMO_HERO_PHOTO = '/demo/hero-mannequin.webp'
 
 export const PRODUCT_COLUMNS =
   // `*` picks up newer columns like on_sale once their SQL has run, without breaking before.

@@ -7,7 +7,7 @@ import { HeartButton } from './HeartButton'
 import { Photo } from './Photo'
 
 export function ProductCard({ product, index = 0, colours = [] }: { product: Product; index?: number; colours?: Product[] }) {
-  const cover = sortedImages(product)[0]
+  const [cover, second] = sortedImages(product)
   const stock = totalStock(product)
   const off = discountPercent(product.price, product.mrp)
   const tag = productTag(product)
@@ -16,7 +16,14 @@ export function ProductCard({ product, index = 0, colours = [] }: { product: Pro
     <div className={`relative flex flex-col gap-1.5 ${index < 8 ? 'rise' : 'rise-on-scroll'}`} style={{ '--i': index } as CSSProperties}>
       <Link to={`/p/${product.id}`} className="group flex flex-col gap-1.5">
         <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-photo">
-          <Photo src={cover ? thumbUrl(cover.path) : undefined} fallbackSrc={cover ? imageUrl(cover.path) : undefined} alt={product.name} className="transition-transform duration-300 group-hover:scale-[1.03]" />
+          <Photo src={cover ? thumbUrl(cover.path) : undefined} fallbackSrc={cover ? imageUrl(cover.path) : undefined} alt={product.name} className="transition-transform duration-500 group-hover:scale-[1.04]" />
+          {/* The second photo (usually the back) shows on hover. */}
+          {second && (
+            <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <Photo src={thumbUrl(second.path)} fallbackSrc={imageUrl(second.path)} alt="" className="[&_span]:hidden" />
+            </span>
+          )}
+          <span className="absolute bottom-0 left-0 bg-ink px-2.5 py-1.5 font-display text-[15px] font-black leading-none text-white">{formatPrice(product.price)}</span>
           {stock === 0 && (
             <span className="absolute left-2 top-2 rounded-md bg-ink px-2 py-1 text-[11px] font-extrabold uppercase text-white">Sold out</span>
           )}
@@ -28,15 +35,12 @@ export function ProductCard({ product, index = 0, colours = [] }: { product: Pro
           {tag && <Tag tag={tag} className="absolute right-2 top-2" />}
         </div>
         <span className="text-sm font-semibold leading-snug">{product.name}</span>
-        <span className="flex flex-wrap items-baseline gap-1.5">
-          <span className="font-display text-base font-extrabold">{formatPrice(product.price)}</span>
-          {off !== null && product.mrp && (
-            <>
-              <span className="text-xs text-muted line-through">{formatPrice(product.mrp)}</span>
-              <span className="text-xs font-extrabold">{off}% off</span>
-            </>
-          )}
-        </span>
+        {off !== null && product.mrp && (
+          <span className="flex flex-wrap items-baseline gap-1.5">
+            <span className="text-xs text-muted line-through">{formatPrice(product.mrp)}</span>
+            <span className="text-xs font-extrabold">{off}% off</span>
+          </span>
+        )}
       </Link>
       {/* Sits over the photo's bottom corner; outside the link so it doesn't open the product. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[3/4]">

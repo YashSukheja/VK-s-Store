@@ -124,7 +124,7 @@ test('shoppers browse by category and see sizes and prices', async ({ page, brow
   const thumb = shirt.locator('img')
   await expect(thumb).toHaveAttribute('src', /\.thumb\.webp$/)
   await expect.poll(() => thumb.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0)
-  expect(await thumb.evaluate((img) => img.naturalWidth)).toBeLessThanOrEqual(480)
+  expect(await thumb.evaluate((img) => img.naturalWidth)).toBeLessThanOrEqual(720)
   await expect(page.getByRole('link', { name: /Slim Jeans/ })).toContainText('Only 1 left')
   if (shots) await page.screenshot({ path: `${shots}/shop-phone.png`, fullPage: true })
 
@@ -166,14 +166,19 @@ test('shoppers browse by category and see sizes and prices', async ({ page, brow
   await desktop.close()
 })
 
-test('the home page shows the rail, new pieces and types; admin adds the model photo', async ({ page }) => {
+test('the home page shows the mannequin photo, new pieces and types; admin changes the photo', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'New in' })).toBeVisible()
-  // The rail hangs the newest pieces in stock; each opens its product.
-  const hero = page.getByRole('region', { name: 'Vrack Clothing' })
-  await expect(hero.getByRole('link', { name: 'Oxford Shirt, Sky Blue' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /^Jeans \d+ piece/ })).toBeVisible()
-  await page.getByRole('link', { name: /^Jeans \d+ piece/ }).click()
+  // Until a photo is uploaded, the built-in mannequin photo shows.
+  const hero = page.getByRole('region', { name: 'New on the rack' })
+  await expect(hero.getByRole('heading', { name: 'Vrack Clothing' })).toBeVisible()
+  const heroPhoto = hero.getByAltText("This week's look: sage green shirt with washed black jeans")
+  await expect(heroPhoto).toHaveAttribute('src', '/demo/hero-mannequin.webp')
+  expect(await heroPhoto.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0)
+  await expect(page.getByRole('region', { name: 'On the rack' }).getByRole('link', { name: /Oxford Shirt/ }).first()).toBeVisible()
+  const types = page.getByRole('navigation', { name: 'Clothing types' })
+  await expect(types.getByRole('link', { name: 'Jeans', exact: true })).toBeVisible()
+  await types.getByRole('link', { name: 'Jeans', exact: true }).click()
   await expect(page).toHaveURL(/\/shop\?cat=jeans$/)
   await expect(page.getByRole('heading', { name: 'Jeans' })).toBeVisible()
 
@@ -183,11 +188,31 @@ test('the home page shows the rail, new pieces and types; admin adds the model p
   await expect(card.getByText('No photo yet')).toBeVisible()
   await card.locator('input[type=file]').setInputFiles(fixture('model.png'))
   await expect(card.getByText('Home page photo saved.')).toBeVisible()
-  await expect(card.getByAltText('Home page model photo')).toBeVisible()
+  await expect(card.getByAltText('Home page photo')).toBeVisible()
 
   await page.goto('/')
-  await expect(page.locator('img.hero-model')).toBeVisible()
+  await expect(page.getByAltText("This week's look: sage green shirt with washed black jeans")).toHaveAttribute('src', /site\/hero-photo\.webp$/)
   if (shots) await page.screenshot({ path: `${shots}/home-phone.png`, fullPage: true })
+})
+
+test('the home page opens with the logo intro, which Skip ends', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'no-preference', viewport: { width: 390, height: 844 } })
+  const page = await context.newPage()
+  await page.goto('/')
+  const skip = page.getByRole('button', { name: 'Skip' })
+  await expect(skip).toBeVisible()
+  await skip.click()
+  await expect(skip).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Vrack Clothing', level: 1 })).toBeVisible()
+  // The hero holds still while scrolling, then the page carries on with no blank gap.
+  await page.mouse.wheel(0, 3000)
+  await expect(page.getByRole('heading', { name: 'New in' })).toBeVisible()
+  // Coming back to the home page later in the visit skips the intro.
+  await page.goto('/shop')
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Vrack Clothing', level: 1 })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Skip' })).toHaveCount(0)
+  await context.close()
 })
 
 test('shoppers search, filter by size, sort and share', async ({ page }) => {

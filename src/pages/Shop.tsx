@@ -65,8 +65,8 @@ export function Shop() {
     return qs ? `/shop?${qs}` : '/shop'
   }
 
-  const catalog = useAsync(() => Promise.all([fetchCategories(), fetchProducts()]), [])
-  const settings = useAsync(fetchSettings, [])
+  const catalog = useAsync(() => Promise.all([fetchCategories(), fetchProducts()]), [], 'catalog')
+  const settings = useAsync(fetchSettings, [], 'settings')
 
   const [categories, products] = catalog.data ?? [[], []]
   const active = categories.find((c) => c.slug === activeSlug)
@@ -136,6 +136,7 @@ export function Shop() {
                     key={l.slug || 'all'}
                     to={categoryLink(l.slug)}
                     aria-current={selected ? 'page' : undefined}
+                    data-chip
                     className={`flex h-10 flex-none items-center border-[1.5px] px-4 text-sm font-bold uppercase md:h-11 md:border-0 md:px-3 ${
                       selected ? 'border-ink bg-ink text-white' : 'border-line text-ink hover:bg-surface'
                     }`}

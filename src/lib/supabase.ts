@@ -10,6 +10,8 @@ if (!url || !anonKey) {
 export const supabase = createClient(url, anonKey)
 
 export const IMAGE_BUCKET = 'product-images'
+/** Product photos never change once uploaded (each has a unique name), so phones may keep them for a year. */
+export const PHOTO_CACHE = '31536000'
 
 export function imageUrl(path: string): string {
   return supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path).data.publicUrl

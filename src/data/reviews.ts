@@ -75,3 +75,16 @@ export async function fetchAllReviews(): Promise<ReviewWithProduct[]> {
     await supabase.from('reviews').select(`${REVIEW_COLUMNS}, products(id, name)`).order('created_at', { ascending: false }).limit(200),
   ) as unknown as ReviewWithProduct[]
 }
+
+/** For the home page: the newest good review with words, and the average over all shown reviews. */
+/** The newest good reviews with words (up to 6) and the star average, for the home page. */
+export async function fetchReviewWall(): Promise<{ reviews: Review[]; average: number; count: number } | null> {
+  const [best, all] = await Promise.all([
+    supabase.from('reviews').select(REVIEW_COLUMNS).eq('is_hidden', false).gte('rating', 4).neq('comment', '').order('created_at', { ascending: false }).limit(6),
+    supabase.from('reviews').select('rating').eq('is_hidden', false).limit(1000),
+  ])
+  const reviews = (best.data ?? []) as Review[]
+  const ratings = (all.data ?? []) as { rating: number }[]
+  if (reviews.length === 0 || ratings.length === 0) return null
+  return { reviews, average: ratings.reduce((s, r) => s + r.rating, 0) / ratings.length, count: ratings.length }
+}

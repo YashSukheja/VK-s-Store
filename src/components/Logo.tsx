@@ -24,8 +24,8 @@ export function Logo({ admin = false, dark = false }: { admin?: boolean; dark?: 
       className={`flex items-center gap-1.5 ${dark ? 'text-white' : 'text-ink'}`}
       aria-label={admin ? 'Vrack admin home' : 'Vrack Clothing home'}
     >
-      <VrackMark size={30} halo={dark ? '#000000' : '#ffffff'} />
-      <span className="font-brand text-[15px] font-semibold tracking-[0.14em]">VRACK</span>
+      <VrackMark size={38} halo={dark ? '#000000' : '#ffffff'} />
+      <span className="font-brand text-[18px] font-semibold tracking-[0.14em]">VRACK</span>
       {admin && <span className="ml-1 text-xs font-bold text-[#bdbdb5]">ADMIN</span>}
     </Link>
   )

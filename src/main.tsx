@@ -14,6 +14,7 @@ import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { ProductPage } from './pages/Product'
 import { Shop } from './pages/Shop'
+import { Wishlist } from './pages/Wishlist'
 
 function NotFound() {
   return (
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { path: '/shop', element: <Shop /> },
       { path: '/p/:id', element: <ProductPage /> },
       { path: '/cart', element: <Cart /> },
+      { path: '/wishlist', element: <Wishlist /> },
       { path: '/login', element: <Login mode="login" /> },
       { path: '/register', element: <Login mode="register" /> },
       { path: '/account', element: <Account /> },

@@ -274,6 +274,6 @@ test('VK adds a second colour; shoppers see both and book the new one', async ({
   await page.getByLabel('Password').fill('fresh-pass-456')
   await page.getByRole('button', { name: 'Log in' }).click()
   await page.getByRole('button', { name: 'Book now · ₹599' }).click()
-  const wa = page.getByRole('link', { name: 'Send to Vrack on WhatsApp' }).first()
+  const wa = page.getByRole('link', { name: 'Send on WhatsApp' }).first()
   expect(decodeURIComponent(await wa.getAttribute('href'))).toContain('1. Oxford Shirt (Navy) | Size M | Qty 1 | ₹599')
 })

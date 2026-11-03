@@ -1,0 +1,13 @@
+# Netlify deploy (an alternative to Cloudflare): builds the site and serves dist/.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Links like /p/... and /admin load the app instead of a 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
