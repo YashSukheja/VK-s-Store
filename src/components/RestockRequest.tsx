@@ -39,7 +39,7 @@ export function RestockRequest({ productId, soldOut }: { productId: string; sold
         <p className="m-0 text-[13px] text-muted">Tap your size and we'll tell you when it's back.</p>
       </div>
       {!session ? (
-        <Link to={`/login?next=/p/${productId}`} className="text-sm font-extrabold underline underline-offset-4">
+        <Link to={`/login?next=/p/${productId}`} className="inline-flex min-h-11 items-center self-start text-sm font-extrabold underline underline-offset-4">
           Log in to get told
         </Link>
       ) : (

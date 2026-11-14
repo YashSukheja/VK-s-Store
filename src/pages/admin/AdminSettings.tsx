@@ -48,7 +48,7 @@ function SettingsForm({ initial }: { initial: StoreSettings }) {
     const upiId = upi.trim()
     if (upiId && (upiId.length > 100 || !/^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/.test(upiId))) return setMessage({ kind: 'error', text: 'UPI ID looks wrong. It should look like name@bank.' })
     const handle = instagram.trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/.*$/, '')
-    if (handle && !/^[A-Za-z0-9._]{1,30}$/.test(handle)) return setMessage({ kind: 'error', text: 'Instagram name looks wrong. Type it like vks.store.' })
+    if (handle && !/^[A-Za-z0-9._]{1,30}$/.test(handle)) return setMessage({ kind: 'error', text: 'Instagram name looks wrong. Type it like vrack.clothing.' })
     setSaving(true)
     const { error } = await supabase
       .from('store_settings')
@@ -90,7 +90,7 @@ function SettingsForm({ initial }: { initial: StoreSettings }) {
               Instagram
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-muted">@</span>
-                <input className={fieldClass} placeholder="vks.store" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+                <input className={fieldClass} placeholder="vrack.clothing" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
               </div>
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-extrabold">
