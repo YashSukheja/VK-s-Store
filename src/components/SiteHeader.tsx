@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router'
 import { useAuth } from '../lib/auth'
 import { useCart } from '../lib/cart'
@@ -42,7 +43,8 @@ export function SiteHeader({ settings }: { settings?: StoreSettings }) {
           </div>
         </div>
       </header>
-      {open && <SiteMenu settings={settings} loggedIn={!!session} onClose={close} />}
+      {/* Rendered on <body> so page animations that move elements around can't break it. */}
+      {open && createPortal(<SiteMenu settings={settings} loggedIn={!!session} onClose={close} />, document.body)}
     </>
   )
 }

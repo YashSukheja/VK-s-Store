@@ -52,8 +52,8 @@ export function AdminLogin() {
     }
     const { data: enrolled, error: enrollError } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
-      friendlyName: 'VK Store admin',
-      issuer: "VK's Store",
+      friendlyName: 'Vrack admin',
+      issuer: 'Vrack Clothing',
     })
     if (enrollError) return setError(enrollError.message)
     setFactorId(enrolled.id)
@@ -145,7 +145,7 @@ export function AdminLogin() {
         {step === 'code' && (
           <form onSubmit={onCode} className="flex flex-col gap-4 rounded-2xl bg-white p-5">
             <h1 className="m-0 font-display text-2xl font-black uppercase">Enter your code</h1>
-            <p className="m-0 text-sm text-body">Open your authenticator app and type the 6-digit code for VK's Store.</p>
+            <p className="m-0 text-sm text-body">Open your authenticator app and type the 6-digit code for Vrack (older setups show it as VK's Store).</p>
             <CodeInput value={code} onChange={setCode} />
             {error && <p role="alert" className="m-0 text-sm font-semibold text-danger">{error}</p>}
             <button disabled={busy || code.length !== 6} className="h-[54px] rounded-none bg-ink text-base font-extrabold text-white disabled:opacity-60">

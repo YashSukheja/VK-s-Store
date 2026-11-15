@@ -116,7 +116,7 @@ export async function downloadBackup(): Promise<{ rows: number }> {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `vks-store-backup-${date}.json`
+  a.download = `vrack-backup-${date}.json`
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
   return { rows }

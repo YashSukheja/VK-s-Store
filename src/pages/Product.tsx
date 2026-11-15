@@ -182,7 +182,7 @@ export function ProductPage() {
           <div className="flex flex-col gap-2.5">
             <div className="flex min-h-11 items-center justify-between gap-3">
               {category ? (
-                <Link to={`/shop?cat=${category.slug}`} className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
+                <Link to={`/shop?cat=${category.slug}`} className="inline-flex min-h-9 items-center text-xs font-bold uppercase tracking-[0.08em] text-muted">
                   {category.name}
                 </Link>
               ) : (

@@ -215,6 +215,30 @@ test('the home page opens with the logo intro, which Skip ends', async ({ browse
   await context.close()
 })
 
+test('the menu opens on the home page with motion on, and its links work', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'no-preference', viewport: { width: 390, height: 844 } })
+  const page = await context.newPage()
+  const errors = []
+  page.on('pageerror', (e) => errors.push(e.message))
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Skip' }).click()
+  await expect(page.getByRole('heading', { name: 'Vrack Clothing', level: 1 })).toBeVisible()
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  const menu = page.getByRole('dialog', { name: 'Menu' })
+  await expect(menu).toBeVisible()
+  await page.getByRole('button', { name: 'Close menu' }).click()
+  await expect(menu).toHaveCount(0)
+  // Again after scrolling, while the hero is pinned.
+  await page.mouse.wheel(0, 600)
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  await expect(menu).toBeVisible()
+  await menu.getByRole('link', { name: /Shop/ }).first().click()
+  await expect(page).toHaveURL(/\/shop/)
+  await expect(page.getByText('Unexpected Application Error')).toHaveCount(0)
+  expect(errors).toEqual([])
+  await context.close()
+})
+
 test('shoppers search, filter by size, sort and share', async ({ page }) => {
   // Record what the share sheet would get.
   await page.addInitScript(() => {
